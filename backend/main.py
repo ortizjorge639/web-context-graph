@@ -43,6 +43,24 @@ def _build_lineage_content(thread_id: str) -> str:
     return parent_content + "\n\n---\n\n" + store.read_content(thread_id)
 
 
+@app.get("/graph")
+def get_graph():
+    """D8: backlinks are structural (fork relationships), never AI-synthesized."""
+    threads_dir = store.threads_dir
+    ids = [p.name for p in threads_dir.iterdir() if p.is_dir()] if threads_dir.exists() else []
+    nodes, edges = [], []
+    for tid in ids:
+        meta = store.load_meta(tid)
+        nodes.append({"id": meta.id, "label": meta.title, "status": meta.status})
+        if meta.forked_from:
+            edges.append({
+                "source": meta.forked_from["thread_id"],
+                "target": meta.id,
+                "chunk_id": meta.forked_from["chunk_id"],
+            })
+    return {"nodes": nodes, "edges": edges}
+
+
 @app.post("/threads")
 def create_thread(req: CreateThreadRequest):
     meta = store.create_thread(title=req.title, forked_from=None)
