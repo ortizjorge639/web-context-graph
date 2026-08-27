@@ -11,9 +11,11 @@ from storage import ThreadStore
 from chunking import chunk_markdown
 from index_builder import rebuild_index
 from copilot_engine import ask_copilot
+from autocommit import ensure_git_repo, autocommit
 
 VAULT_ROOT = Path.home() / "web-context-graph-data"
 store = ThreadStore(vault_root=VAULT_ROOT)
+ensure_git_repo(VAULT_ROOT)
 
 app = FastAPI()
 
@@ -45,6 +47,7 @@ def _build_lineage_content(thread_id: str) -> str:
 def create_thread(req: CreateThreadRequest):
     meta = store.create_thread(title=req.title, forked_from=None)
     rebuild_index(VAULT_ROOT)
+    autocommit(VAULT_ROOT, message=f"create thread {meta.id}")
     return meta.__dict__
 
 
@@ -68,6 +71,7 @@ def send_message(thread_id: str, req: MessageRequest):
         reply = ask_copilot(meta.copilot_session_id, lineage + f"\n\n**user:** {req.content}")
         store.append_message(thread_id, "assistant", reply)
     rebuild_index(VAULT_ROOT)
+    autocommit(VAULT_ROOT, message=f"message in {thread_id}")
     return {"ok": True}
 
 
@@ -85,6 +89,7 @@ def fork_thread(thread_id: str, req: ForkRequest):
     lineage = _build_lineage_content(thread_id)
     store.append_message(child.id, "system", f"[Forked from chunk {req.chunk_id}]\n\n{lineage}")
     rebuild_index(VAULT_ROOT)
+    autocommit(VAULT_ROOT, message=f"fork thread {thread_id} into {child.id}")
     return store.load_meta(child.id).__dict__
 
 
@@ -111,6 +116,7 @@ def edit_in_place(thread_id: str, req: EditRequest):
     meta.updated_at = datetime.now(timezone.utc).isoformat()
     store._write_meta(meta)
     rebuild_index(VAULT_ROOT)
+    autocommit(VAULT_ROOT, message=f"edit thread {thread_id}")
     return {"ok": True, "cascaded": False}
 
 
@@ -129,4 +135,5 @@ def refork(thread_id: str, req: ReforkRequest):
         forked_from={"thread_id": thread_id, "chunk_id": req.chunk_id},
     )
     rebuild_index(VAULT_ROOT)
+    autocommit(VAULT_ROOT, message=f"refork {thread_id}: delete {req.old_child_thread_id}, create {child.id}")
     return {"ok": True, "cascaded": True, "deleted_thread_ids": deleted_ids, "new_thread": child.__dict__}
