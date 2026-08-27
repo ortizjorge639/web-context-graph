@@ -30,3 +30,18 @@ def test_fork_thread_carries_full_lineage():
         assert child["forked_from"]["thread_id"] == root["id"]
         detail = client.get(f"/threads/{child['id']}").json()
         assert "Root" in detail["content"] or "Hi" in detail["content"]
+
+def test_lineage_depth_reported_in_thread_detail():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        root = client.post("/threads", json={"title": "Root"}).json()
+        detail = client.get(f"/threads/{root['id']}").json()
+        assert detail["lineage_depth"] == 0
+
+        client.post(f"/threads/{root['id']}/messages", json={"role": "user", "content": "Hi"})
+        child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": f"{root['id']}#c0", "title": "Child"},
+        ).json()
+        child_detail = client.get(f"/threads/{child['id']}").json()
+        assert child_detail["lineage_depth"] == 1

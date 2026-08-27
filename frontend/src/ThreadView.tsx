@@ -13,6 +13,7 @@ export function ThreadView({ threadId }: { threadId: string }) {
   const [chunks, setChunks] = useState<Chunk[]>([]);
   const [input, setInput] = useState("");
   const [expandedTrace, setExpandedTrace] = useState<Set<string>>(new Set());
+  const [lineageDepth, setLineageDepth] = useState(0);
 
   function toggleTrace(chunkId: string) {
     setExpandedTrace((prev) => {
@@ -25,6 +26,7 @@ export function ThreadView({ threadId }: { threadId: string }) {
   async function refresh() {
     const data = await getThread(threadId);
     setChunks(data.chunks);
+    setLineageDepth(data.lineage_depth ?? 0);
   }
 
   useEffect(() => { refresh(); }, [threadId]);
@@ -45,6 +47,12 @@ export function ThreadView({ threadId }: { threadId: string }) {
 
   return (
     <div>
+      {lineageDepth >= 5 && (
+        <div style={{ background: "#7b0d1e", color: "#f7f7ff", padding: 8, borderRadius: 6 }}>
+          This thread carries {lineageDepth} forks of lineage as context — cost/latency grows with depth.
+          Condensing is not built yet (Phase 2), but this is a heads-up.
+        </div>
+      )}
       {chunks.map((chunk) => (
         <div key={chunk.id} className="chunk-block" data-chunk-id={chunk.id}>
           <div>{chunk.text}</div>

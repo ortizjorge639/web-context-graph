@@ -69,6 +69,13 @@ def create_thread(req: CreateThreadRequest):
     return meta.__dict__
 
 
+def _lineage_depth(thread_id: str) -> int:
+    meta = store.load_meta(thread_id)
+    if not meta.forked_from:
+        return 0
+    return 1 + _lineage_depth(meta.forked_from["thread_id"])
+
+
 @app.get("/threads/{thread_id}")
 def get_thread(thread_id: str):
     try:
@@ -77,7 +84,12 @@ def get_thread(thread_id: str):
         raise HTTPException(404, "Thread not found")
     content = store.read_content(thread_id)
     chunks = chunk_markdown(content, thread_id=thread_id)
-    return {**meta.__dict__, "content": content, "chunks": [c.__dict__ for c in chunks]}
+    return {
+        **meta.__dict__,
+        "content": content,
+        "chunks": [c.__dict__ for c in chunks],
+        "lineage_depth": _lineage_depth(thread_id),
+    }
 
 
 @app.post("/threads/{thread_id}/messages")
