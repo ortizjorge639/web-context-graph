@@ -34,6 +34,7 @@ class ThreadMeta:
     status: str = "active"
     chunks: list = field(default_factory=list)
     forked_children: list = field(default_factory=list)
+    copilot_session_id: str = field(default_factory=lambda: str(uuid.uuid4()))  # 1:1 with Copilot CLI session
 
 
 class ThreadStore:
