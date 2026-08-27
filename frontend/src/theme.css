@@ -1,0 +1,32 @@
+:root {
+  --charcoal-brown: #1f271b;
+  --ghost-white: #f7f7ff;
+  --burgundy: #7b0d1e;
+  --vibrant-coral: #fe5f55;
+  --willow-green: #bcd979;
+}
+
+body {
+  background: var(--ghost-white);
+  color: #1a1a1a;
+  font-family: -apple-system, sans-serif;
+}
+
+.chunk-block {
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.chunk-actions {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  gap: 4px;
+}
+
+.chunk-block:hover .chunk-actions {
+  display: flex;
+}
