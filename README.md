@@ -4,6 +4,22 @@ Spider-style branching conversation graph, powered by GitHub Copilot CLI as the 
 
 See `docs/plans/2026-08-27-web-context-graph-mvp.md` for the implementation plan, and the spec it implements (Jorge's Obsidian vault, `Projects/Web-Context-Graph/Web-Context-Graph-Spec.md`).
 
+## Screenshots
+
+Live captures from the running Phase 1 MVP (real backend data, real Copilot CLI responses):
+
+**Onboarding carousel** — Raycast-style, one mechanic per screen, skippable:
+
+![Onboarding](docs/screenshots/01-onboarding.png)
+
+**Graph View** — real threads and a real fork edge, rendered via react-flow. Clicking a node opens that thread:
+
+![Graph View](docs/screenshots/02-graph-view.png)
+
+**Thread View** — chunked agent output (block-level), opened by clicking the corresponding node in Graph View:
+
+![Thread View](docs/screenshots/03-thread-view.png)
+
 ## Prerequisites
 
 - Python 3.11+

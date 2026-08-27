@@ -5,6 +5,7 @@ sees ITS OWN lineage chain, never a sibling's).
 """
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from storage import ThreadStore
@@ -18,6 +19,12 @@ store = ThreadStore(vault_root=VAULT_ROOT)
 ensure_git_repo(VAULT_ROOT)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class CreateThreadRequest(BaseModel):

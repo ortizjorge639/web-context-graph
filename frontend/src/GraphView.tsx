@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import ReactFlow, { Background, Node, Edge } from "reactflow";
+import ReactFlow, { Background } from "reactflow";
+import type { Node, Edge } from "reactflow";
 import "reactflow/dist/style.css";
 
-const BASE = "http://localhost:8000";
+const BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 // Graph View color semantics: AGENT PROPOSAL per spec, not user-confirmed --
 // approve/adjust before treating as final. Coral = active path, willow-green
@@ -14,7 +15,7 @@ const COLORS = {
   text: "#f7f7ff",
 };
 
-export function GraphView() {
+export function GraphView({ onOpenThread }: { onOpenThread?: (id: string) => void }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
@@ -41,7 +42,12 @@ export function GraphView() {
 
   return (
     <div style={{ height: "100vh", background: COLORS.background }}>
-      <ReactFlow nodes={nodes} edges={edges} fitView>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        fitView
+        onNodeClick={(_, node) => onOpenThread?.(node.id)}
+      >
         <Background color={COLORS.text} gap={16} />
       </ReactFlow>
     </div>
