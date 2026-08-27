@@ -85,3 +85,16 @@ class ThreadStore:
 
     def read_content(self, thread_id: str) -> str:
         return (self._thread_dir(thread_id) / "thread.md").read_text()
+
+    def delete_thread_recursive(self, thread_id: str) -> list[str]:
+        """
+        Absolute deletion (D7): deletes this thread and every thread that
+        (transitively) forked from it. Returns the list of deleted thread IDs.
+        """
+        meta = self.load_meta(thread_id)
+        deleted = [thread_id]
+        for fc in list(meta.forked_children):
+            deleted.extend(self.delete_thread_recursive(fc["thread_id"]))
+        import shutil
+        shutil.rmtree(self._thread_dir(thread_id))
+        return deleted

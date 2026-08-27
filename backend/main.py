@@ -86,3 +86,47 @@ def fork_thread(thread_id: str, req: ForkRequest):
     store.append_message(child.id, "system", f"[Forked from chunk {req.chunk_id}]\n\n{lineage}")
     rebuild_index(VAULT_ROOT)
     return store.load_meta(child.id).__dict__
+
+
+class EditRequest(BaseModel):
+    new_content: str
+
+
+class ReforkRequest(BaseModel):
+    old_child_thread_id: str
+    chunk_id: str
+    new_title: str
+
+
+@app.post("/threads/{thread_id}/edit")
+def edit_in_place(thread_id: str, req: EditRequest):
+    """
+    D7: a plain in-place edit is NOT a re-fork. It never cascades and never
+    affects any thread that forked from this one -- resolved 2026-08-27.
+    """
+    path = store._thread_dir(thread_id) / "thread.md"
+    path.write_text(req.new_content)
+    meta = store.load_meta(thread_id)
+    from datetime import datetime, timezone
+    meta.updated_at = datetime.now(timezone.utc).isoformat()
+    store._write_meta(meta)
+    rebuild_index(VAULT_ROOT)
+    return {"ok": True, "cascaded": False}
+
+
+@app.post("/threads/{thread_id}/refork")
+def refork(thread_id: str, req: ReforkRequest):
+    """
+    D7: this IS the "conversation stems off into a new branch" case --
+    absolute, unconditional deletion of the OLD downstream branch, per the
+    user's own words ("C is deleted, done. Absolute."). The confirm-before-delete
+    UX lives in the frontend only (spec-author addition, not user-specified) --
+    this endpoint itself performs the deletion unconditionally once called.
+    """
+    deleted_ids = store.delete_thread_recursive(req.old_child_thread_id)
+    child = store.create_thread(
+        title=req.new_title,
+        forked_from={"thread_id": thread_id, "chunk_id": req.chunk_id},
+    )
+    rebuild_index(VAULT_ROOT)
+    return {"ok": True, "cascaded": True, "deleted_thread_ids": deleted_ids, "new_thread": child.__dict__}
