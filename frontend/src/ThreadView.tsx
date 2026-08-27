@@ -12,6 +12,15 @@ interface Chunk {
 export function ThreadView({ threadId }: { threadId: string }) {
   const [chunks, setChunks] = useState<Chunk[]>([]);
   const [input, setInput] = useState("");
+  const [expandedTrace, setExpandedTrace] = useState<Set<string>>(new Set());
+
+  function toggleTrace(chunkId: string) {
+    setExpandedTrace((prev) => {
+      const next = new Set(prev);
+      next.has(chunkId) ? next.delete(chunkId) : next.add(chunkId);
+      return next;
+    });
+  }
 
   async function refresh() {
     const data = await getThread(threadId);
@@ -39,6 +48,20 @@ export function ThreadView({ threadId }: { threadId: string }) {
       {chunks.map((chunk) => (
         <div key={chunk.id} className="chunk-block" data-chunk-id={chunk.id}>
           <div>{chunk.text}</div>
+          {(chunk as any).trace && (chunk as any).trace.length > 0 && (
+            <div>
+              <button onClick={() => toggleTrace(chunk.id)}>
+                {(chunk as any).trace.length} steps
+              </button>
+              {expandedTrace.has(chunk.id) && (
+                <ul>
+                  {(chunk as any).trace.map((step: string, i: number) => (
+                    <li key={i}>{step}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           <div className="chunk-actions">
             <button onClick={() => navigator.clipboard.writeText(chunk.text)}>Copy</button>
             <button onClick={() => handleFork(chunk)}>Fork from here</button>
