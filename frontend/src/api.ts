@@ -14,6 +14,12 @@ export interface ThreadSummary {
   descendant_count?: number;
 }
 
+export interface ForkedChild {
+  thread_id: string;
+  chunk_id: string;
+  title: string;
+}
+
 export interface GraphData {
   nodes: Array<{
     id: string;
@@ -159,6 +165,8 @@ export async function getThread(id: string) {
   return readJson<{
     id: string;
     title: string;
+    raw_content: string;
+    forked_children: ForkedChild[];
     chunks: Array<{
       id: string;
       kind: string;
@@ -233,6 +241,33 @@ export async function forkThread(threadId: string, chunkId: string, prompt: stri
     body: JSON.stringify({ chunk_id: chunkId, prompt }),
   });
   return readJson<ThreadSummary>(res);
+}
+
+export async function editThread(threadId: string, newContent: string): Promise<void> {
+  const res = await fetch(`${BASE}/threads/${threadId}/edit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ new_content: newContent }),
+  });
+  await readJson<{ ok: boolean; cascaded: false }>(res);
+}
+
+export async function reforkThread(
+  threadId: string,
+  oldChildThreadId: string,
+  chunkId: string,
+  newTitle: string,
+): Promise<{ deleted_thread_ids: string[]; new_thread: ThreadSummary }> {
+  const res = await fetch(`${BASE}/threads/${threadId}/refork`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      old_child_thread_id: oldChildThreadId,
+      chunk_id: chunkId,
+      new_title: newTitle,
+    }),
+  });
+  return readJson<{ deleted_thread_ids: string[]; new_thread: ThreadSummary }>(res);
 }
 
 export async function getGraph(): Promise<GraphData> {

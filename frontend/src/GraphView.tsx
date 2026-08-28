@@ -26,8 +26,10 @@ export function GraphView({
       })
       .finally(() => setIsLoading(false));
   }, [initialGraph]);
+  const displayedGraph = initialGraph ?? graph;
+  const displayedError = initialGraph ? "" : error;
 
-  if (isLoading) {
+  if (!initialGraph && isLoading) {
     return (
       <div className="workspace-loading">
         <span className="loading-mark"><ProductMark /></span>
@@ -46,16 +48,16 @@ export function GraphView({
         </div>
         <div className="graph-count">
           <GraphIcon />
-          <span>{graph.nodes.length} {graph.nodes.length === 1 ? "thread" : "threads"}</span>
+          <span>{displayedGraph.nodes.length} {displayedGraph.nodes.length === 1 ? "thread" : "threads"}</span>
         </div>
       </header>
 
-      {error ? (
+      {displayedError ? (
         <div className="inline-error graph-error" role="alert">
           <strong>The map could not be drawn.</strong>
-          <span>{error}</span>
+          <span>{displayedError}</span>
         </div>
-      ) : graph.nodes.length === 0 ? (
+      ) : displayedGraph.nodes.length === 0 ? (
         <div className="graph-empty">
           <span className="empty-mark"><GraphIcon /></span>
           <h2>Your map starts with a thought</h2>
@@ -64,7 +66,7 @@ export function GraphView({
       ) : (
         <div className="graph-canvas">
           <ConversationMap
-            graph={graph}
+            graph={displayedGraph}
             activeThreadId={activeThreadId}
             onOpenThread={onOpenThread}
           />

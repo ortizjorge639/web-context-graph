@@ -465,14 +465,16 @@ def update_thread(thread_id: str, req: UpdateThreadRequest):
         meta = store.load_meta(thread_id)
     except FileNotFoundError:
         raise HTTPException(404, "Thread not found")
+    title = None
     if req.title is not None:
         title = " ".join(req.title.split())
         if not title:
             raise HTTPException(400, "Conversation title cannot be empty")
+    if req.pinned is not None and meta.forked_from:
+        raise HTTPException(400, "Only root conversations can be pinned")
+    if title is not None:
         meta = store.rename_thread(thread_id, title[:120])
     if req.pinned is not None:
-        if meta.forked_from:
-            raise HTTPException(400, "Only root conversations can be pinned")
         meta.pinned = req.pinned
         meta.updated_at = datetime.now(timezone.utc).isoformat()
         store._write_meta(meta)
@@ -484,7 +486,8 @@ def update_thread(thread_id: str, req: UpdateThreadRequest):
 @app.post("/threads/reorder")
 def reorder_threads(req: ReorderThreadsRequest):
     seen = set()
-    for order, thread_id in enumerate(req.thread_ids):
+    metas = []
+    for thread_id in req.thread_ids:
         if thread_id in seen:
             raise HTTPException(400, "Conversation order contains duplicates")
         seen.add(thread_id)
@@ -494,6 +497,8 @@ def reorder_threads(req: ReorderThreadsRequest):
             raise HTTPException(404, f"Thread not found: {thread_id}")
         if meta.forked_from or meta.pinned:
             raise HTTPException(400, "Only unpinned root conversations can be reordered")
+        metas.append(meta)
+    for order, meta in enumerate(metas):
         meta.sidebar_order = order
         store._write_meta(meta)
     rebuild_index(VAULT_ROOT)
@@ -574,7 +579,16 @@ def _display_lineage_chunks(thread_id: str) -> list[dict]:
         ):
             matched += 1
         if matched >= source_length:
-            own_chunks = own_chunks[:start] + own_chunks[start + matched:]
+            snapshot_end = start + matched
+            if matched == len(parent_texts):
+                child_user_chunks = [
+                    index
+                    for index in range(snapshot_end, len(own_chunks))
+                    if own_chunks[index]["text"].startswith("**user:**")
+                ]
+                if child_user_chunks:
+                    snapshot_end = child_user_chunks[-1]
+            own_chunks = own_chunks[:start] + own_chunks[snapshot_end:]
             break
 
     return parent_prefix + own_chunks
@@ -590,6 +604,14 @@ def get_thread(thread_id: str):
     return {
         **meta.__dict__,
         "content": "\n\n".join(chunk["text"] for chunk in chunks),
+        "raw_content": store.read_content(thread_id),
+        "forked_children": [
+            {
+                **child,
+                "title": store.load_meta(child["thread_id"]).title,
+            }
+            for child in meta.forked_children
+        ],
         "chunks": [
             {**chunk, "is_ancestor": chunk["owner_thread_id"] != thread_id}
             for chunk in chunks

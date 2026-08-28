@@ -39,12 +39,16 @@ test("streams a response and renders persisted message metrics", async () => {
     .mockResolvedValueOnce({
       id: "t1",
       title: "Streaming",
+      raw_content: "# Streaming\n",
+      forked_children: [],
       chunks: [],
       lineage_depth: 0,
     })
     .mockResolvedValueOnce({
       id: "t1",
       title: "Streaming",
+      raw_content: "# Streaming\n\n**assistant:** Hello there\n",
+      forked_children: [],
       chunks: [{
         id: "t1#c2",
         kind: "block",
@@ -86,6 +90,8 @@ test("surfaces agent and tool activity while waiting for output", async () => {
   vi.spyOn(api, "getThread").mockResolvedValue({
     id: "t1",
     title: "Activity",
+    raw_content: "# Activity\n",
+    forked_children: [],
     chunks: [],
     lineage_depth: 0,
   });
@@ -127,6 +133,8 @@ test("creates a branch only after the branch prompt is submitted", async () => {
   vi.spyOn(api, "getThread").mockResolvedValue({
     id: "parent",
     title: "Parent",
+    raw_content: "# Parent\n\n**assistant:** Source thought\n",
+    forked_children: [],
     chunks: [{
       id: "parent#c1",
       kind: "block",
@@ -167,6 +175,8 @@ test("dims ancestor context and exposes actions only on the current branch", asy
   vi.spyOn(api, "getThread").mockResolvedValue({
     id: "child",
     title: "Child",
+    raw_content: "# Child\n\n**assistant:** Current thought\n",
+    forked_children: [],
     chunks: [
       {
         id: "parent#c1",
@@ -194,4 +204,100 @@ test("dims ancestor context and exposes actions only on the current branch", asy
   expect(screen.getByText("Current branch")).toBeInTheDocument();
   expect(container.querySelectorAll(".ancestor-chunk .message-actions")).toHaveLength(0);
   expect(screen.getAllByLabelText("Branch from this chunk")).toHaveLength(1);
+});
+
+test("edits a current-branch chunk in place", async () => {
+  vi.spyOn(api, "getThread")
+    .mockResolvedValueOnce({
+      id: "thread",
+      title: "Thread",
+      raw_content: "# Thread\n\n**assistant:** Original answer\n",
+      forked_children: [],
+      chunks: [{
+        id: "thread#c1",
+        kind: "block",
+        order: 1,
+        text: "**assistant:** Original answer",
+        is_ancestor: false,
+      }],
+      lineage_depth: 0,
+    })
+    .mockResolvedValueOnce({
+      id: "thread",
+      title: "Thread",
+      raw_content: "# Thread\n\n**assistant:** Revised answer\n",
+      forked_children: [],
+      chunks: [{
+        id: "thread#c1",
+        kind: "block",
+        order: 1,
+        text: "**assistant:** Revised answer",
+        is_ancestor: false,
+      }],
+      lineage_depth: 0,
+    });
+  const editThread = vi.spyOn(api, "editThread").mockResolvedValue();
+
+  render(<ThreadView threadId="thread" />);
+  fireEvent.click(await screen.findByLabelText("Edit chunk"));
+  fireEvent.change(screen.getByLabelText("Content"), { target: { value: "Revised answer" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+  await waitFor(() => expect(editThread).toHaveBeenCalledWith(
+    "thread",
+    "# Thread\n\n**assistant:** Revised answer\n",
+  ));
+  expect(await screen.findByText("Revised answer")).toBeInTheDocument();
+});
+
+test("confirms destructive re-fork before replacing a child branch", async () => {
+  vi.spyOn(api, "getThread").mockResolvedValue({
+    id: "parent",
+    title: "Parent",
+    raw_content: "# Parent\n\n**assistant:** Source thought\n",
+    forked_children: [{
+      thread_id: "old-child",
+      chunk_id: "parent#c1",
+      title: "Old child",
+    }],
+    chunks: [{
+      id: "parent#c1",
+      kind: "block",
+      order: 1,
+      text: "**assistant:** Source thought",
+      is_ancestor: false,
+    }],
+    lineage_depth: 0,
+  });
+  const reforkThread = vi.spyOn(api, "reforkThread").mockResolvedValue({
+    deleted_thread_ids: ["old-child", "grandchild"],
+    new_thread: {
+      id: "replacement",
+      title: "Replacement",
+      status: "active",
+      updated_at: "2026-08-28T00:00:00Z",
+    },
+  });
+  const onReforked = vi.fn();
+
+  render(<ThreadView threadId="parent" onReforked={onReforked} />);
+  fireEvent.click(await screen.findByLabelText("Replace branch from this chunk"));
+
+  expect(reforkThread).not.toHaveBeenCalled();
+  expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Replacement title"), {
+    target: { value: "Replacement" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Delete and replace" }));
+
+  await waitFor(() => expect(reforkThread).toHaveBeenCalledWith(
+    "parent",
+    "old-child",
+    "parent#c1",
+    "Replacement",
+  ));
+  expect(onReforked).toHaveBeenCalledWith(
+    "replacement",
+    ["old-child", "grandchild"],
+  );
 });

@@ -4173,9 +4173,10 @@ body {
   font-weight: 600;
 }
 
-.app-dialog input {
+.app-dialog input,
+.app-dialog select,
+.app-dialog textarea {
   width: 100%;
-  height: 50px;
   padding: 0 14px;
   border: 1px solid rgba(17, 16, 18, 0.1);
   border-radius: 14px;
@@ -4185,7 +4186,21 @@ body {
   font-size: 0.875rem;
 }
 
-.app-dialog input:focus {
+.app-dialog input,
+.app-dialog select {
+  height: 50px;
+}
+
+.app-dialog textarea {
+  min-height: 180px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  resize: vertical;
+}
+
+.app-dialog input:focus,
+.app-dialog select:focus,
+.app-dialog textarea:focus {
   border-color: rgba(17, 16, 18, 0.35);
   box-shadow: 0 0 0 3px rgba(17, 16, 18, 0.05);
 }

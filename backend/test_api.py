@@ -141,6 +141,84 @@ def test_legacy_embedded_lineage_is_not_rendered_twice():
         assert child_chunk["is_ancestor"] is False
 
 
+def test_legacy_embedded_lineage_removes_deleted_parent_suffix():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(root["id"], "user", "Ancestor question")
+        main.store.append_message(root["id"], "assistant", "Fork point")
+        main.store.append_message(root["id"], "user", "Old parent suffix")
+        child = main.store.create_thread(
+            title="Legacy child",
+            forked_from={"thread_id": root["id"], "chunk_id": f"{root['id']}#c2"},
+        )
+        lineage = main._build_lineage_content(root["id"])
+        main.store.append_message(
+            child.id,
+            "system",
+            f"[Forked from chunk {root['id']}#c2]\n\n{lineage}",
+        )
+        main.store.append_message(child.id, "user", "Child-only question")
+        root_path = Path(tmp, "threads", root["id"], "thread.md")
+        root_path.write_text(
+            "# Root\n\n**user:** Ancestor question\n\n**assistant:** Fork point\n"
+        )
+
+        detail = client.get(f"/threads/{child.id}").json()
+
+        visible = "\n".join(chunk["text"] for chunk in detail["chunks"])
+        assert "Old parent suffix" not in visible
+        assert "Child-only question" in visible
+
+
+def test_update_thread_validates_pin_before_renaming():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(root["id"], "assistant", "Source")
+        child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": f"{root['id']}#c1", "title": "Child"},
+        ).json()
+
+        response = client.patch(
+            f"/threads/{child['id']}",
+            json={"title": "Unexpected rename", "pinned": True},
+        )
+
+        assert response.status_code == 400
+        assert main.store.load_meta(child["id"]).title == "Child"
+        assert main.store.read_content(child["id"]).startswith("# Child")
+
+
+def test_reorder_validates_every_thread_before_writing():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        first = client.post("/threads", json={"title": "First"}).json()
+        second = client.post("/threads", json={"title": "Second"}).json()
+        before = {
+            thread_id: main.store.load_meta(thread_id).sidebar_order
+            for thread_id in (first["id"], second["id"])
+        }
+
+        response = client.post(
+            "/threads/reorder",
+            json={"thread_ids": [first["id"], second["id"], first["id"]]},
+        )
+
+        assert response.status_code == 400
+        assert {
+            thread_id: main.store.load_meta(thread_id).sidebar_order
+            for thread_id in (first["id"], second["id"])
+        } == before
+
+
 def test_thread_management_search_pin_rename_reorder_and_delete():
     with tempfile.TemporaryDirectory() as tmp:
         client = make_client(tmp)

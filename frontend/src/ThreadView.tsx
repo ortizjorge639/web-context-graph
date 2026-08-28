@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { forkThread, getThread, streamMessage } from "./api";
-import type { MessageMetrics, StreamActivity } from "./api";
+import { editThread, forkThread, getThread, reforkThread, streamMessage } from "./api";
+import type { ForkedChild, MessageMetrics, StreamActivity } from "./api";
 import {
   CloseIcon,
+  EditIcon,
   ProductMark,
   SendIcon,
   SparkIcon,
@@ -38,22 +39,44 @@ function presentChunk(chunk: Chunk): PresentedChunk {
   };
 }
 
+function replaceChunk(
+  rawContent: string,
+  chunks: Chunk[],
+  chunkId: string,
+  replacement: string,
+): string {
+  let offset = 0;
+  for (const chunk of chunks.filter((candidate) => !candidate.is_ancestor)) {
+    const start = rawContent.indexOf(chunk.text, offset);
+    if (start < 0) continue;
+    if (chunk.id === chunkId) {
+      return rawContent.slice(0, start) + replacement + rawContent.slice(start + chunk.text.length);
+    }
+    offset = start + chunk.text.length;
+  }
+  throw new Error("The selected chunk could not be found in this conversation.");
+}
+
 export function ThreadView({
   threadId,
   onForked,
   initialMessage,
   onInitialMessageConsumed,
+  onReforked,
 }: {
   threadId: string;
   onForked?: (threadId: string, initialMessage: string) => void;
   initialMessage?: string;
   onInitialMessageConsumed?: () => void;
+  onReforked?: (threadId: string, deletedThreadIds: string[]) => void;
 }) {
   const [title, setTitle] = useState("");
   const [chunks, setChunks] = useState<Chunk[]>([]);
   const [input, setInput] = useState("");
   const [expandedTrace, setExpandedTrace] = useState<Set<string>>(new Set());
   const [lineageDepth, setLineageDepth] = useState(0);
+  const [rawContent, setRawContent] = useState("");
+  const [forkedChildren, setForkedChildren] = useState<ForkedChild[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
@@ -63,6 +86,12 @@ export function ThreadView({
   const [streamingContent, setStreamingContent] = useState("");
   const [streamingElapsedMs, setStreamingElapsedMs] = useState(0);
   const [streamActivities, setStreamActivities] = useState<StreamActivity[]>([]);
+  const [editSource, setEditSource] = useState<PresentedChunk | null>(null);
+  const [editedContent, setEditedContent] = useState("");
+  const [reforkSource, setReforkSource] = useState<PresentedChunk | null>(null);
+  const [reforkChildId, setReforkChildId] = useState("");
+  const [replacementTitle, setReplacementTitle] = useState("");
+  const [isMutating, setIsMutating] = useState(false);
   const conversationRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const initialMessageSent = useRef(false);
@@ -74,6 +103,8 @@ export function ThreadView({
       setTitle(data.title);
       setChunks(data.chunks);
       setLineageDepth(data.lineage_depth ?? 0);
+      setRawContent(data.raw_content ?? "");
+      setForkedChildren(data.forked_children ?? []);
     } catch (refreshError) {
       setError(refreshError instanceof Error ? refreshError.message : "Could not open this conversation.");
     } finally {
@@ -89,6 +120,8 @@ export function ThreadView({
         setTitle(data.title);
         setChunks(data.chunks);
         setLineageDepth(data.lineage_depth ?? 0);
+        setRawContent(data.raw_content ?? "");
+        setForkedChildren(data.forked_children ?? []);
       })
       .catch((loadError: unknown) => {
         if (!cancelled) {
@@ -231,6 +264,61 @@ export function ThreadView({
     window.requestAnimationFrame(() => composerRef.current?.focus());
   }
 
+  function beginEdit(chunk: PresentedChunk) {
+    setEditSource(chunk);
+    setEditedContent(chunk.content);
+  }
+
+  async function submitEdit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!editSource || !editedContent.trim()) return;
+    const replacement = editSource.role === "content"
+      ? editedContent.trim()
+      : `**${editSource.role}:** ${editedContent.trim()}`;
+    try {
+      setIsMutating(true);
+      setError("");
+      await editThread(
+        threadId,
+        replaceChunk(rawContent, chunks, editSource.id, replacement),
+      );
+      setEditSource(null);
+      await refresh();
+    } catch (editError) {
+      setError(editError instanceof Error ? editError.message : "Could not edit this chunk.");
+    } finally {
+      setIsMutating(false);
+    }
+  }
+
+  function beginRefork(chunk: PresentedChunk) {
+    const children = forkedChildren.filter((child) => child.chunk_id === chunk.id);
+    if (!children.length) return;
+    setReforkSource(chunk);
+    setReforkChildId(children[0].thread_id);
+    setReplacementTitle(`Replacement for ${children[0].title}`);
+  }
+
+  async function confirmRefork() {
+    if (!reforkSource || !reforkChildId || !replacementTitle.trim()) return;
+    try {
+      setIsMutating(true);
+      setError("");
+      const result = await reforkThread(
+        threadId,
+        reforkChildId,
+        reforkSource.id,
+        replacementTitle.trim(),
+      );
+      setReforkSource(null);
+      onReforked?.(result.new_thread.id, result.deleted_thread_ids);
+    } catch (reforkError) {
+      setError(reforkError instanceof Error ? reforkError.message : "Could not replace this branch.");
+    } finally {
+      setIsMutating(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="workspace-loading">
@@ -299,6 +387,12 @@ export function ThreadView({
                   onToggleTrace={() => toggleTrace(chunk.id)}
                   onCopy={chunk.role === "user" || chunk.is_ancestor ? undefined : () => navigator.clipboard.writeText(chunk.content)}
                   onBranch={chunk.role === "user" || chunk.is_ancestor ? undefined : () => beginBranch(chunk)}
+                  onEdit={chunk.is_ancestor ? undefined : () => beginEdit(chunk)}
+                  onRefork={
+                    !chunk.is_ancestor && forkedChildren.some((child) => child.chunk_id === chunk.id)
+                      ? () => beginRefork(chunk)
+                      : undefined
+                  }
                 />
               </div>
             ))}
@@ -358,6 +452,54 @@ export function ThreadView({
           {forkSource ? "Enter to create branch · Esc to cancel" : "Enter to send · Shift + Enter for a new line"}
         </span>
       </div>
+      {editSource && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setEditSource(null)}>
+          <form className="app-dialog chunk-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-chunk-heading" onSubmit={submitEdit} onMouseDown={(event) => event.stopPropagation()}>
+            <button type="button" className="dialog-close" onClick={() => setEditSource(null)} aria-label="Close"><CloseIcon /></button>
+            <span className="dialog-icon"><EditIcon /></span>
+            <span className="dialog-kicker">Edit in place</span>
+            <h2 id="edit-chunk-heading">Edit this chunk</h2>
+            <p>Existing branches stay attached. Edits that change a branch point are rejected.</p>
+            <label>
+              <span>Content</span>
+              <textarea autoFocus value={editedContent} onChange={(event) => setEditedContent(event.target.value)} />
+            </label>
+            <div className="dialog-actions">
+              <button type="button" className="button-quiet" onClick={() => setEditSource(null)}>Cancel</button>
+              <button type="submit" className="button-dark" disabled={!editedContent.trim() || isMutating}>Save</button>
+            </div>
+          </form>
+        </div>
+      )}
+      {reforkSource && (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setReforkSource(null)}>
+          <div className="app-dialog branch-dialog" role="alertdialog" aria-modal="true" aria-labelledby="refork-heading" onMouseDown={(event) => event.stopPropagation()}>
+            <button type="button" className="dialog-close" onClick={() => setReforkSource(null)} aria-label="Close"><CloseIcon /></button>
+            <span className="dialog-icon danger"><SparkIcon /></span>
+            <span className="dialog-kicker">Destructive re-fork</span>
+            <h2 id="refork-heading">Replace this branch?</h2>
+            <p>The selected branch and all of its descendants will be deleted before its replacement is created.</p>
+            {forkedChildren.filter((child) => child.chunk_id === reforkSource.id).length > 1 && (
+              <label>
+                <span>Branch to replace</span>
+                <select aria-label="Branch to replace" value={reforkChildId} onChange={(event) => setReforkChildId(event.target.value)}>
+                  {forkedChildren.filter((child) => child.chunk_id === reforkSource.id).map((child) => (
+                    <option key={child.thread_id} value={child.thread_id}>{child.title}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label>
+              <span>Replacement title</span>
+              <input value={replacementTitle} onChange={(event) => setReplacementTitle(event.target.value)} />
+            </label>
+            <div className="dialog-actions">
+              <button type="button" className="button-quiet" onClick={() => setReforkSource(null)}>Cancel</button>
+              <button type="button" className="button-danger" disabled={!replacementTitle.trim() || isMutating} onClick={() => void confirmRefork()}>Delete and replace</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

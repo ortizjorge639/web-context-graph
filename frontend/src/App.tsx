@@ -211,6 +211,15 @@ function App() {
     setThreads(availableThreads);
   }
 
+  async function refreshGraphIfOpen() {
+    if (view !== "graph") return;
+    try {
+      setGraphEntryData({ graph: await getGraph() });
+    } catch (error) {
+      setReplayError(error instanceof Error ? error.message : "Could not refresh the conversation map.");
+    }
+  }
+
   function openThread(id: string) {
     const ancestors = new Set<string>();
     let thread = threadsById.get(id);
@@ -289,7 +298,7 @@ function App() {
           ? { ...current, thread: { ...current.thread, title: updated.title } }
           : current
       ));
-      await refreshThreads();
+      await Promise.all([refreshThreads(), refreshGraphIfOpen()]);
     } catch (error) {
       setReplayError(error instanceof Error ? error.message : "Could not rename this conversation.");
     }
@@ -318,6 +327,7 @@ function App() {
           : remaining[0]?.id;
         setThreadId(nextId ?? null);
       }
+      await refreshGraphIfOpen();
     } catch (error) {
       setReplayError(error instanceof Error ? error.message : "Could not delete this conversation.");
     }
@@ -704,6 +714,7 @@ function App() {
             onForked={openForkedThread}
             initialMessage={branchKickoff?.threadId === threadId ? branchKickoff.message : undefined}
             onInitialMessageConsumed={() => setBranchKickoff(null)}
+            onReforked={(replacementId) => openThread(replacementId)}
           />
         )}
         {view === "thread" && !threadId && (

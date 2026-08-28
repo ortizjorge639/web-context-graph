@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { BranchIcon, ChevronIcon, CopyIcon, SparkIcon } from "./Icons";
+import { BranchIcon, ChevronIcon, CopyIcon, EditIcon, SparkIcon } from "./Icons";
 import type { MessageMetrics, StreamActivity } from "./api";
 
 export type ConversationRole = "user" | "assistant" | "system" | "content";
@@ -14,6 +14,8 @@ export function ConversationChunk({
   onToggleTrace,
   onCopy,
   onBranch,
+  onEdit,
+  onRefork,
   compact = false,
   metrics,
   streaming = false,
@@ -27,6 +29,8 @@ export function ConversationChunk({
   onToggleTrace?: () => void;
   onCopy?: () => void;
   onBranch?: () => void;
+  onEdit?: () => void;
+  onRefork?: () => void;
   compact?: boolean;
   metrics?: MessageMetrics;
   streaming?: boolean;
@@ -118,7 +122,7 @@ export function ConversationChunk({
         )}
       </div>
 
-      {(onCopy || onBranch) && role !== "user" && (
+      {(onCopy || onBranch || onEdit || onRefork) && (
         <div className="message-actions">
           {onCopy && (
             <button onClick={onCopy} aria-label="Copy chunk" title="Copy">
@@ -127,6 +131,16 @@ export function ConversationChunk({
           )}
           {onBranch && (
             <button onClick={onBranch} aria-label="Branch from this chunk" title="Branch from here">
+              <BranchIcon />
+            </button>
+          )}
+          {onEdit && (
+            <button onClick={onEdit} aria-label="Edit chunk" title="Edit">
+              <EditIcon />
+            </button>
+          )}
+          {onRefork && (
+            <button onClick={onRefork} aria-label="Replace branch from this chunk" title="Replace branch">
               <BranchIcon />
             </button>
           )}
