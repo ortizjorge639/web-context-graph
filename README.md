@@ -2,6 +2,8 @@
 
 Spider-style branching conversation graph, powered by GitHub Copilot CLI as the reasoning engine. Reply to any chunk of an agent's response and it forks a new thread from that exact point; backtrack freely; the whole traversal persists as a folder-of-markdown graph you own, with an auto-updating index and a visual Graph View.
 
+**Public product landing:** [https://ortizjorge639.github.io/web-context-graph/](https://ortizjorge639.github.io/web-context-graph/)
+
 See `docs/plans/2026-08-27-web-context-graph-mvp.md` for the implementation plan, and the spec it implements (Jorge's Obsidian vault, `Projects/Web-Context-Graph/Web-Context-Graph-Spec.md`).
 
 ## Screenshots
