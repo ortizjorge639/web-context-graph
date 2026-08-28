@@ -1,55 +1,77 @@
 import { useEffect, useState } from "react";
-import ReactFlow, { Background } from "reactflow";
-import type { Node, Edge } from "reactflow";
+import { getGraph } from "./api";
+import type { GraphData } from "./api";
+import { ConversationMap } from "./ConversationMap";
+import { GraphIcon, ProductMark } from "./Icons";
 import "reactflow/dist/style.css";
 
-const BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
-
-// Graph View color semantics: AGENT PROPOSAL per spec, not user-confirmed --
-// approve/adjust before treating as final. Coral = active path, willow-green
-// = rest of tree, charcoal-brown = canvas background.
-const COLORS = {
-  active: "#fe5f55",
-  normal: "#bcd979",
-  background: "#1f271b",
-  text: "#f7f7ff",
-};
-
-export function GraphView({ onOpenThread }: { onOpenThread?: (id: string) => void }) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
-
+export function GraphView({
+  activeThreadId,
+  initialGraph,
+  onOpenThread,
+}: {
+  activeThreadId?: string | null;
+  initialGraph?: GraphData;
+  onOpenThread?: (id: string) => void;
+}) {
+  const [graph, setGraph] = useState<GraphData>(initialGraph ?? { nodes: [], edges: [] });
+  const [isLoading, setIsLoading] = useState(!initialGraph);
+  const [error, setError] = useState("");
   useEffect(() => {
-    fetch(`${BASE}/graph`).then((r) => r.json()).then((data) => {
-      setNodes(
-        data.nodes.map((n: any, i: number) => ({
-          id: n.id,
-          data: { label: n.label },
-          position: { x: (i % 5) * 200, y: Math.floor(i / 5) * 120 },
-          style: { background: COLORS.normal, color: "#1a1a1a", borderRadius: 8 },
-        }))
-      );
-      setEdges(
-        data.edges.map((e: any) => ({
-          id: `${e.source}-${e.target}`,
-          source: e.source,
-          target: e.target,
-          label: e.chunk_id,
-        }))
-      );
-    });
-  }, []);
+    if (initialGraph) return;
+    getGraph()
+      .then(setGraph)
+      .catch((graphError: unknown) => {
+        setError(graphError instanceof Error ? graphError.message : "Could not load the map.");
+      })
+      .finally(() => setIsLoading(false));
+  }, [initialGraph]);
+  const displayedGraph = initialGraph ?? graph;
+  const displayedError = initialGraph ? "" : error;
+
+  if (!initialGraph && isLoading) {
+    return (
+      <div className="workspace-loading">
+        <span className="loading-mark"><ProductMark /></span>
+        <p>Drawing your map...</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ height: "100vh", background: COLORS.background }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        fitView
-        onNodeClick={(_, node) => onOpenThread?.(node.id)}
-      >
-        <Background color={COLORS.text} gap={16} />
-      </ReactFlow>
+    <div className="graph-view">
+      <header className="graph-header">
+        <div>
+          <span className="eyebrow">Spatial view</span>
+          <h1>Your conversation map</h1>
+          <p>Arrange your lineage, grow a knowledge tree, and export the map you own.</p>
+        </div>
+        <div className="graph-count">
+          <GraphIcon />
+          <span>{displayedGraph.nodes.length} {displayedGraph.nodes.length === 1 ? "thread" : "threads"}</span>
+        </div>
+      </header>
+
+      {displayedError ? (
+        <div className="inline-error graph-error" role="alert">
+          <strong>The map could not be drawn.</strong>
+          <span>{displayedError}</span>
+        </div>
+      ) : displayedGraph.nodes.length === 0 ? (
+        <div className="graph-empty">
+          <span className="empty-mark"><GraphIcon /></span>
+          <h2>Your map starts with a thought</h2>
+          <p>Create a conversation, then branch from any response to watch it grow.</p>
+        </div>
+      ) : (
+        <div className="graph-canvas">
+          <ConversationMap
+            graph={displayedGraph}
+            activeThreadId={activeThreadId}
+            onOpenThread={onOpenThread}
+          />
+        </div>
+      )}
     </div>
   );
 }
