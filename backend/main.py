@@ -19,7 +19,7 @@ import threading
 import time
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 from storage import ThreadStore
@@ -29,7 +29,15 @@ from copilot_engine import ask_copilot, stream_copilot
 from autocommit import ensure_git_repo, autocommit
 from tutorial_seed import TutorialResetBlocked, ensure_tutorial, tutorial_status
 
-VAULT_ROOT = Path.home() / "web-context-graph-data"
+VAULT_ROOT = Path(
+    os.environ.get("WCG_VAULT_ROOT", Path.home() / "web-context-graph-data")
+).expanduser()
+FRONTEND_DIST = Path(
+    os.environ.get(
+        "WCG_FRONTEND_DIST",
+        Path(__file__).resolve().parents[1] / "frontend" / "dist",
+    )
+).expanduser()
 store = ThreadStore(vault_root=VAULT_ROOT)
 _thread_locks: dict[str, threading.Lock] = {}
 _thread_locks_guard = threading.Lock()
@@ -983,3 +991,27 @@ def refork(thread_id: str, req: ReforkRequest):
         }:
             raise HTTPException(400, "Fork chunk does not exist in the parent thread")
         return _perform_refork(thread_id, req, parent, deleted_ids)
+
+
+@app.get("/healthz", include_in_schema=False)
+def healthcheck():
+    return {
+        "ok": True,
+        "frontend_built": (FRONTEND_DIST / "index.html").is_file(),
+    }
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def serve_frontend(full_path: str):
+    index_path = FRONTEND_DIST / "index.html"
+    if not index_path.is_file():
+        raise HTTPException(404, "Frontend build not found")
+
+    requested_path = (FRONTEND_DIST / full_path).resolve()
+    if (
+        full_path
+        and requested_path.is_relative_to(FRONTEND_DIST.resolve())
+        and requested_path.is_file()
+    ):
+        return FileResponse(requested_path)
+    return FileResponse(index_path)
