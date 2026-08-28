@@ -41,6 +41,40 @@ npm install
 npm run dev
 ```
 
+## Deploy locally
+
+The supported MVP deployment is a single-user localhost application. It uses
+the Copilot CLI account already authenticated on the machine, keeps the vault
+under `~/web-context-graph-data/`, builds the frontend, and serves the complete
+application from FastAPI:
+
+```bash
+./scripts/run-local.sh
+```
+
+The launcher installs missing project dependencies, builds the production
+frontend, binds only to `127.0.0.1:8000`, and opens the app. Set `PORT` to use a
+different local port, or `WCG_VAULT_ROOT` to use another vault directory.
+
+Before launching, authenticate once with:
+
+```bash
+copilot login
+```
+
+Copilot calls are attributed to the GitHub account represented by the local CLI
+credential. Headless credentials can instead be supplied through
+`COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, or `GITHUB_TOKEN`. Current monthly plans use
+token-based GitHub AI Credits; annual plans may remain on premium-request
+accounting until renewal. The app's displayed token metrics are informational;
+GitHub Billing is authoritative.
+
+This release is intentionally local and single-user. Do not expose the backend
+to the public internet: the agent currently runs with broad local tool access.
+A hosted multi-user service requires isolated workers, per-user authentication
+and encrypted credentials, restricted tools, quotas, audit logging, and remote
+storage.
+
 ## Test
 
 ```bash

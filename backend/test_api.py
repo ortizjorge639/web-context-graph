@@ -511,6 +511,32 @@ def test_missing_thread_mutations_return_404():
         ).status_code == 404
 
 
+def test_production_frontend_serves_assets_and_spa_routes(tmp_path):
+    import main
+
+    frontend_dist = tmp_path / "dist"
+    assets = frontend_dist / "assets"
+    assets.mkdir(parents=True)
+    (frontend_dist / "index.html").write_text("<main>Web Context Graph</main>")
+    (assets / "app.js").write_text("window.WCG = true")
+    original_dist = main.FRONTEND_DIST
+    main.FRONTEND_DIST = frontend_dist
+    try:
+        client = TestClient(main.app)
+
+        assert client.get("/").text == "<main>Web Context Graph</main>"
+        assert client.get("/workspace/deep-link").text == (
+            "<main>Web Context Graph</main>"
+        )
+        assert client.get("/assets/app.js").text == "window.WCG = true"
+        assert client.get("/healthz").json() == {
+            "ok": True,
+            "frontend_built": True,
+        }
+    finally:
+        main.FRONTEND_DIST = original_dist
+
+
 def test_first_branch_stream_seeds_context_only_through_fork_point():
     with tempfile.TemporaryDirectory() as tmp:
         client = make_client(tmp)
