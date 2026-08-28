@@ -2,6 +2,16 @@ import tempfile
 from pathlib import Path
 from storage import ThreadStore, ThreadMeta
 
+
+def test_constructing_store_does_not_create_vault():
+    with tempfile.TemporaryDirectory() as tmp:
+        vault = Path(tmp) / "not-created-yet"
+
+        ThreadStore(vault_root=vault)
+
+        assert not vault.exists()
+
+
 def test_create_root_thread_generates_safe_id_and_folder():
     with tempfile.TemporaryDirectory() as tmp:
         store = ThreadStore(vault_root=Path(tmp))
@@ -9,7 +19,22 @@ def test_create_root_thread_generates_safe_id_and_folder():
         assert meta.id
         assert (Path(tmp) / "threads" / meta.id / "thread.md").exists()
         assert (Path(tmp) / "threads" / meta.id / "meta.yaml").exists()
+        guide = Path(tmp) / "AGENTS.md"
+        assert guide.exists()
+        assert "Read `index.md`" in guide.read_text()
+        assert "Never include sibling branches" in guide.read_text()
         assert "!" not in meta.id and "?" not in meta.id
+
+
+def test_existing_agent_guide_is_not_overwritten():
+    with tempfile.TemporaryDirectory() as tmp:
+        guide = Path(tmp) / "AGENTS.md"
+        guide.write_text("# My custom guide\n")
+
+        store = ThreadStore(vault_root=Path(tmp))
+
+        assert store.agent_guide_created is False
+        assert guide.read_text() == "# My custom guide\n"
 
 def test_create_forked_thread_records_forked_from_and_registers_in_parent():
     with tempfile.TemporaryDirectory() as tmp:

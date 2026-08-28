@@ -51,9 +51,16 @@ cd backend && .venv/bin/pytest -v --ignore=test_smoke_e2e.py --ignore=test_copil
 cd backend && .venv/bin/pytest -v
 
 # Frontend
-cd frontend && npx vitest run
+cd frontend && npm test
 ```
 
 ## Data location
 
-User graph data lives in `~/web-context-graph-data/` by default — not this repo. That folder is the user's actual content (threads, index.md), auto-committed to its own local git repo after every mutation as a safety net for the app's absolute-delete-on-refork semantics.
+User graph data lives in `~/web-context-graph-data/` by default — not this repo. That folder is the user's actual content, auto-committed to its own local git repo after every mutation as a safety net for the app's absolute-delete-on-refork semantics.
+
+Every vault is initialized with an `AGENTS.md` navigation contract for external
+agents. It instructs them to use `index.md` for discovery, treat each thread's
+`meta.yaml` as structural authority, read `thread.md` for conversation content,
+reconstruct lineage root-to-current through recorded fork chunks, and exclude
+sibling branches. The generated guide also documents safe mutation and index
+regeneration rules. Existing `AGENTS.md` customizations are never overwritten.
