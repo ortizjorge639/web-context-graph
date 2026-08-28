@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Web-Context Graph turns linear AI chats into a local-first map of branching conversations you can own, revisit, and share with agents.">
-    <meta name="theme-color" content="#151714">
-    <meta property="og:title" content="Web-Context Graph — Think beyond the thread">
-    <meta property="og:description" content="Branch from any response. Keep every line of thought. Own the graph as plain files.">
+    <meta name="description" content="Web-Context Graph maps branching AI conversations so every direction stays clear, connected, and locally owned.">
+    <meta name="theme-color" content="#f8f7f9">
+    <meta property="og:title" content="Web-Context Graph — Think in branches">
+    <meta property="og:description" content="Explore every direction without losing the path that brought you there.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ortizjorge639.github.io/web-context-graph/">
-    <meta property="og:image" content="https://ortizjorge639.github.io/web-context-graph/assets/product-graph.png">
+    <meta property="og:image" content="https://ortizjorge639.github.io/web-context-graph/assets/tutorial-05-graph.webp">
     <meta name="twitter:card" content="summary_large_image">
-    <title>Web-Context Graph — Think beyond the thread</title>
+    <title>Web-Context Graph — Think in branches</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
@@ -21,401 +21,215 @@
 
     <header class="site-header">
       <a class="brand" href="#top" aria-label="Web-Context Graph home">
-        <svg aria-hidden="true" viewBox="0 0 40 40">
-          <circle cx="9" cy="20" r="4"></circle>
-          <circle cx="30" cy="9" r="4"></circle>
-          <circle cx="30" cy="31" r="4"></circle>
-          <path d="M13 19c7-1 8-8 13-9M13 21c7 1 8 8 13 9"></path>
-        </svg>
-        <span>Web-Context Graph</span>
+        <span class="brand-mark">
+          <svg aria-hidden="true" viewBox="0 0 32 32">
+            <circle cx="8" cy="9" r="3"></circle>
+            <circle cx="24" cy="8" r="3"></circle>
+            <circle cx="16" cy="23" r="3"></circle>
+            <path d="M10.5 10.8 14.5 20M21.5 10 17.5 20M11 9h10"></path>
+          </svg>
+        </span>
+        <span>Web-Context</span>
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#how-it-works">How it works</a>
-        <a href="#vault">Your data</a>
-        <a class="nav-cta" href="https://github.com/ortizjorge639/web-context-graph">View on GitHub</a>
+        <a href="#journey">How it works</a>
+        <a class="header-button" href="https://github.com/ortizjorge639/web-context-graph">View on GitHub</a>
       </nav>
     </header>
 
     <main id="main">
       <section class="hero" id="top" aria-labelledby="hero-title">
-        <div class="hero-glow" aria-hidden="true"></div>
-        <div class="hero-copy">
-          <p class="eyebrow"><span></span> Local-first conversation intelligence</p>
-          <h1 id="hero-title">Your best thinking<br><em>shouldn’t end in a thread.</em></h1>
-          <p class="hero-lede">
-            Branch from any part of an AI response. Explore each idea in isolation.
-            Keep the whole journey as a living graph of Markdown you own.
-          </p>
-          <div class="hero-actions">
-            <a class="button button-primary" href="https://github.com/ortizjorge639/web-context-graph">
+        <div class="orb orb-coral" aria-hidden="true"></div>
+        <div class="orb orb-violet" aria-hidden="true"></div>
+        <div class="hero-copy reveal">
+          <p class="kicker">Your conversations, mapped</p>
+          <h1 id="hero-title">Think in branches.</h1>
+          <p>Explore every direction without losing the path that brought you there.</p>
+          <div class="actions">
+            <a class="button button-dark" href="https://github.com/ortizjorge639/web-context-graph">
               Explore the project
-              <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M4 10h11M11 6l4 4-4 4"></path></svg>
+              <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m7.5 4.5 5.5 5.5-5.5 5.5"></path></svg>
             </a>
-            <a class="button button-secondary" href="#how-it-works">See how it works</a>
-          </div>
-          <ul class="hero-notes" aria-label="Product attributes">
-            <li>Plain files</li>
-            <li>Local by default</li>
-            <li>Powered by Copilot CLI</li>
-          </ul>
-        </div>
-
-        <div class="hero-visual" aria-label="A conversation branching into multiple connected lines of thought">
-          <div class="visual-grid" aria-hidden="true"></div>
-          <svg class="hero-lines" aria-hidden="true" viewBox="0 0 760 650" preserveAspectRatio="none">
-            <path class="line line-trunk" d="M98 325 C180 325 185 325 251 325"></path>
-            <path class="line line-one" d="M382 325 C450 325 434 127 526 127"></path>
-            <path class="line line-two" d="M382 325 C452 325 456 325 526 325"></path>
-            <path class="line line-three" d="M382 325 C450 325 434 523 526 523"></path>
-          </svg>
-          <article class="graph-card graph-root">
-            <span class="card-tag">Starting thought</span>
-            <strong>How should we design the onboarding?</strong>
-            <small><span class="status-dot"></span> Root thread</small>
-          </article>
-          <div class="branch-point" aria-hidden="true"><span></span></div>
-          <article class="graph-card graph-a">
-            <span class="card-tag coral">Branch 01</span>
-            <strong>Make the first minute feel obvious</strong>
-            <p>Explore a guided product tour.</p>
-          </article>
-          <article class="graph-card graph-b">
-            <span class="card-tag green">Branch 02</span>
-            <strong>Let the interface teach itself</strong>
-            <p>Prototype contextual hints.</p>
-          </article>
-          <article class="graph-card graph-c">
-            <span class="card-tag gold">Branch 03</span>
-            <strong>Start with an empty canvas</strong>
-            <p>Test a minimal first-run flow.</p>
-          </article>
-          <div class="visual-caption">
-            <span class="caption-pulse"></span>
-            Three directions. Zero lost context.
+            <a class="button button-quiet" href="#journey">See the journey</a>
           </div>
         </div>
+        <figure class="hero-shot reveal">
+          <img
+            src="assets/tutorial-01-welcome.webp"
+            width="1440"
+            height="900"
+            alt="The real Web-Context onboarding welcome screen, introducing Think in branches"
+            fetchpriority="high"
+          >
+        </figure>
+        <a class="scroll-cue" href="#journey">
+          <span>Follow the path</span>
+          <span aria-hidden="true">↓</span>
+        </a>
       </section>
 
-      <section class="problem section-dark" aria-labelledby="problem-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow eyebrow-light">The problem</p>
-          <h2 id="problem-title">Linear chat makes nonlinear thinking disappear.</h2>
-          <p>
-            Every follow-up quietly replaces a road not taken. Soon, the answer you need
-            is buried somewhere above—and every alternate idea is gone.
-          </p>
-        </div>
-        <div class="problem-compare">
-          <article class="compare-card linear-card reveal">
-            <div class="compare-title">
-              <span class="compare-icon">×</span>
-              <div><strong>One endless thread</strong><small>Context gets tangled</small></div>
-            </div>
-            <div class="linear-messages" aria-hidden="true">
-              <div class="message user-message"></div>
-              <div class="message reply-message long"></div>
-              <div class="message user-message short"></div>
-              <div class="message reply-message"></div>
-              <div class="message user-message faded"></div>
-              <div class="message reply-message long faded"></div>
-            </div>
-            <p>Follow-ups mix unrelated directions until the original reasoning is hard to recover.</p>
-          </article>
-          <article class="compare-card branching-card reveal">
-            <div class="compare-title">
-              <span class="compare-icon">↗</span>
-              <div><strong>A graph of possibilities</strong><small>Every path stays clear</small></div>
-            </div>
-            <div class="mini-graph" aria-hidden="true">
-              <span class="mini-line ml-1"></span><span class="mini-line ml-2"></span>
-              <span class="mini-line ml-3"></span><span class="mini-line ml-4"></span>
-              <span class="mini-node mn-1"></span><span class="mini-node mn-2"></span>
-              <span class="mini-node mn-3"></span><span class="mini-node mn-4"></span>
-              <span class="mini-node mn-5"></span>
-            </div>
-            <p>Each direction becomes a first-class thread, connected to the exact idea that started it.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="story" id="how-it-works" aria-labelledby="story-title">
-        <div class="story-intro reveal">
-          <p class="eyebrow">How it works</p>
-          <h2 id="story-title">Think in branches.<br>Stay in flow.</h2>
+      <section class="journey" id="journey" aria-labelledby="journey-title">
+        <div class="section-intro reveal">
+          <p class="kicker">The first minute</p>
+          <h2 id="journey-title">One idea at a time.</h2>
+          <p>The product tutorial is the product promise: split the answer, choose a direction, and keep the whole journey in view.</p>
         </div>
 
-        <div class="story-grid">
-          <div class="story-steps">
-            <article class="story-step reveal" data-step="1">
-              <span class="step-number">01</span>
-              <h3>Responses become ideas you can act on.</h3>
-              <p>
-                Agent output is split into meaningful, replyable chunks—not a monolithic wall
-                of text. Pick the exact premise, recommendation, or question you want to pursue.
-              </p>
-            </article>
-            <article class="story-step reveal" data-step="2">
-              <span class="step-number">02</span>
-              <h3>Reply there. A new branch opens.</h3>
-              <p>
-                The original thread stays intact. Your follow-up starts a child conversation
-                from that precise response chunk, with its relationship recorded on both sides.
-              </p>
-            </article>
-            <article class="story-step reveal" data-step="3">
-              <span class="step-number">03</span>
-              <h3>Each branch remembers only its lineage.</h3>
-              <p>
-                A branch inherits the path from root to current—never its siblings. Experiments
-                stay focused, competing directions stay clean, and context remains explainable.
-              </p>
-            </article>
+        <article class="chapter">
+          <div class="chapter-copy reveal">
+            <span class="step">01</span>
+            <p class="kicker">Chunking</p>
+            <h3>Every idea has an address.</h3>
+            <p>Responses become focused blocks you can copy, revisit, or branch from.</p>
           </div>
+          <figure class="tutorial-frame reveal">
+            <img
+              src="assets/tutorial-02-chunking.webp"
+              width="1440"
+              height="900"
+              loading="lazy"
+              alt="The real tutorial chunking screen showing a response split into focused replyable ideas"
+            >
+            <figcaption>Each response becomes a set of replyable ideas.</figcaption>
+          </figure>
+        </article>
 
-          <div class="story-stage" aria-hidden="true">
-            <div class="app-window">
-              <div class="window-bar">
-                <span></span><span></span><span></span>
-                <small>Research / Product direction</small>
-              </div>
-              <div class="window-body">
-                <div class="app-sidebar">
-                  <div class="sidebar-mark"></div>
-                  <span></span><span></span><span></span>
-                  <div class="sidebar-bottom"></div>
-                </div>
-                <div class="conversation">
-                  <div class="prompt-chip">How can we make exploration feel less disposable?</div>
-                  <div class="agent-label"><i></i> Copilot</div>
-                  <div class="response-chunk chunk-one">
-                    <p><strong>Preserve the paths not taken.</strong> Treat each follow-up as a branch rather than another message in a queue.</p>
-                    <button tabindex="-1">Branch from here <b>↗</b></button>
-                  </div>
-                  <div class="response-chunk chunk-two">
-                    <p><strong>Make structure visible.</strong> Show the relationship between conversations as a map users can navigate.</p>
-                  </div>
-                  <div class="response-chunk chunk-three">
-                    <p><strong>Keep the source inspectable.</strong> Store the graph as plain Markdown and YAML.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="fork-toast"><span>✓</span> New branch created from this idea</div>
+        <article class="chapter chapter-reverse">
+          <div class="chapter-copy reveal">
+            <span class="step">02</span>
+            <p class="kicker">Forking</p>
+            <h3>Follow the interesting path.</h3>
+            <p>Choose any idea and explore a new direction without losing your place.</p>
           </div>
-        </div>
-      </section>
+          <figure class="tutorial-frame reveal">
+            <img
+              src="assets/tutorial-03-forking.webp"
+              width="1440"
+              height="900"
+              loading="lazy"
+              alt="The real tutorial forking screen showing one thought opening into two possible directions"
+            >
+            <figcaption>A new direction, with the original path intact.</figcaption>
+          </figure>
+        </article>
 
-      <section class="lineage section-warm" aria-labelledby="lineage-title">
-        <div class="section-heading centered reveal">
-          <p class="eyebrow">Context without contamination</p>
-          <h2 id="lineage-title">Your branch knows where it came from.<br>Not what its siblings said.</h2>
-          <p>Web-Context Graph reconstructs only the root-to-current path for each conversation.</p>
-        </div>
-        <div class="lineage-diagram reveal" aria-label="A root thread splits into three branches, with one active lineage highlighted and sibling branches excluded">
-          <div class="lineage-row root-row">
-            <article class="lineage-node active"><small>Root</small><strong>Define the product goal</strong></article>
+        <article class="chapter">
+          <div class="chapter-copy reveal">
+            <span class="step">03</span>
+            <p class="kicker">Backtracking</p>
+            <h3>Return without starting over.</h3>
+            <p>Move through earlier decisions while every branch stays within reach.</p>
           </div>
-          <div class="lineage-connectors connector-one" aria-hidden="true"></div>
-          <div class="lineage-row branch-row">
-            <article class="lineage-node muted"><small>Sibling</small><strong>Optimize for teams</strong><span>Excluded</span></article>
-            <article class="lineage-node active"><small>Chosen path</small><strong>Design for deep solo work</strong><span>Included</span></article>
-            <article class="lineage-node muted"><small>Sibling</small><strong>Explore social sharing</strong><span>Excluded</span></article>
-          </div>
-          <div class="lineage-connectors connector-two" aria-hidden="true"></div>
-          <div class="lineage-row root-row">
-            <article class="lineage-node active current"><small>Current branch</small><strong>Build a local-first workflow</strong><span>Focused context</span></article>
-          </div>
-        </div>
-      </section>
+          <figure class="tutorial-frame reveal">
+            <img
+              src="assets/tutorial-04-backtracking.webp"
+              width="1440"
+              height="900"
+              loading="lazy"
+              alt="The real tutorial backtracking screen showing a path returning to an earlier decision"
+            >
+            <figcaption>Earlier context remains one click away.</figcaption>
+          </figure>
+        </article>
 
-      <section class="map-modes section-dark" aria-labelledby="modes-title">
-        <div class="modes-copy reveal">
-          <p class="eyebrow eyebrow-light">One graph, two lenses</p>
-          <h2 id="modes-title">Zoom out without losing the thread.</h2>
-          <p>
-            Switch between the story of how you got here and the growing body of knowledge
-            you’ve built along the way.
-          </p>
-          <div class="mode-tabs" role="tablist" aria-label="Graph display modes">
-            <button id="lineage-tab" role="tab" aria-selected="true" aria-controls="mode-visual" data-mode="lineage" tabindex="0">
-              <strong>Lineage map</strong><span>Follow the sequence of thought</span>
-            </button>
-            <button id="tree-tab" role="tab" aria-selected="false" aria-controls="mode-visual" data-mode="tree" tabindex="-1">
-              <strong>Knowledge tree</strong><span>See themes and branches grow</span>
-            </button>
+        <article class="chapter chapter-reverse">
+          <div class="chapter-copy reveal">
+            <span class="step">04</span>
+            <p class="kicker">Graph view</p>
+            <h3>See the shape of your thinking.</h3>
+            <p>The entire journey becomes a navigable map and a folder of Markdown you own.</p>
           </div>
-        </div>
-        <div class="mode-visual reveal" id="mode-visual" role="tabpanel" aria-labelledby="lineage-tab">
-          <div class="map-toolbar"><span>Conversation map</span><small id="mode-label">Lineage</small></div>
-          <div class="interactive-map lineage-mode" id="interactive-map" aria-hidden="true">
-            <svg viewBox="0 0 700 520" preserveAspectRatio="none">
-              <path d="M94 256C170 256 158 136 246 136"></path>
-              <path d="M94 256C170 256 158 260 246 260"></path>
-              <path d="M94 256C170 256 158 384 246 384"></path>
-              <path d="M374 136C450 136 438 84 528 84"></path>
-              <path d="M374 136C450 136 438 188 528 188"></path>
-              <path d="M374 260C450 260 438 292 528 292"></path>
-              <path d="M374 384C450 384 438 404 528 404"></path>
-            </svg>
-            <div class="map-node node-1">Product vision</div>
-            <div class="map-node node-2">Onboarding</div>
-            <div class="map-node node-3">Local data</div>
-            <div class="map-node node-4">Agent handoff</div>
-            <div class="map-node node-5">First minute</div>
-            <div class="map-node node-6">Empty states</div>
-            <div class="map-node node-7">Vault contract</div>
-            <div class="map-node node-8">Files view</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="vault" id="vault" aria-labelledby="vault-title">
-        <div class="vault-copy reveal">
-          <p class="eyebrow">Local-first by design</p>
-          <h2 id="vault-title">Not another black box.<br>A folder you can open.</h2>
-          <p>
-            Your graph lives outside the app as readable Markdown and YAML. Move it, search it,
-            back it up, edit it with care, or let another agent navigate it.
-          </p>
-          <div class="vault-benefits">
-            <span>Portable</span><span>Inspectable</span><span>Agent-readable</span>
-          </div>
-        </div>
-        <div class="vault-window reveal">
-          <div class="code-title"><span></span><span></span><span></span><small>~/web-context-graph-data</small></div>
-          <div class="file-tree" role="img" aria-label="Example vault containing AGENTS.md, index.md, and thread folders with Markdown and YAML files">
-            <div class="tree-row root"><b>⌄</b><i class="folder"></i><strong>web-context-graph-data</strong></div>
-            <div class="tree-row depth-1"><b></b><i class="doc guide"></i><span>AGENTS.md</span><em>navigation contract</em></div>
-            <div class="tree-row depth-1"><b></b><i class="doc index"></i><span>index.md</span><em>regenerable map</em></div>
-            <div class="tree-row depth-1"><b>⌄</b><i class="folder"></i><span>threads</span></div>
-            <div class="tree-row depth-2"><b>⌄</b><i class="folder coral-folder"></i><span>product-vision</span></div>
-            <div class="tree-row depth-3"><b></b><i class="doc"></i><span>thread.md</span><em>conversation</em></div>
-            <div class="tree-row depth-3"><b></b><i class="data"></i><span>meta.yaml</span><em>relationships</em></div>
-            <div class="tree-row depth-2"><b>›</b><i class="folder green-folder"></i><span>local-first-workflow</span></div>
-          </div>
-          <div class="contract">
-            <span>AGENTS.md</span>
-            <code>Read index.md → follow meta.yaml → load thread.md → exclude siblings</code>
-          </div>
-        </div>
+          <figure class="tutorial-frame reveal">
+            <img
+              src="assets/tutorial-05-graph.webp"
+              width="1440"
+              height="900"
+              loading="lazy"
+              alt="The real tutorial graph screen showing connected conversation branches as a navigable map"
+            >
+            <figcaption>A traceable web, stored as local Markdown.</figcaption>
+          </figure>
+        </article>
       </section>
 
       <section class="ownership" aria-labelledby="ownership-title">
-        <div class="section-heading centered reveal">
-          <p class="eyebrow">Built for ownership</p>
-          <h2 id="ownership-title">The app is a view.<br>Your files are the product.</h2>
+        <div class="ownership-copy reveal">
+          <p class="kicker kicker-dark">Stored locally</p>
+          <h2 id="ownership-title">A map you can open.</h2>
+          <p>Your conversations live as readable Markdown and YAML, backed by Git history—not trapped inside a black box.</p>
+          <ul aria-label="Local data benefits">
+            <li>Portable</li>
+            <li>Inspectable</li>
+            <li>Agent-readable</li>
+          </ul>
         </div>
-        <div class="feature-grid">
-          <article class="feature-card files-card reveal">
-            <div class="feature-icon">
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7.5h7l2 2h9v10H3zM3 7.5V5h7l2 2.5"></path></svg>
-            </div>
-            <h3>Browse the vault inside the app</h3>
-            <p>
-              Open <code>AGENTS.md</code>, inspect the generated index, reveal threads in Finder,
-              and read conversation or relationship files without leaving your workspace.
-            </p>
-            <div class="files-miniature" aria-hidden="true">
-              <div class="files-side">
-                <span class="selected">◆ AGENTS.md</span>
-                <span>◇ index.md</span>
-                <span>⌄ Conversations</span>
-                <span class="indent">⌄ Product vision</span>
-                <span class="indent-2">thread.md</span>
-                <span class="indent-2">meta.yaml</span>
-              </div>
-              <div class="files-doc"><i></i><i></i><i></i><i class="short"></i><i></i></div>
-            </div>
-          </article>
-          <article class="feature-card git-card reveal">
-            <div class="feature-icon">
-              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"></circle><circle cx="6" cy="19" r="2"></circle><circle cx="18" cy="12" r="2"></circle><path d="M6 7v10M8 7c1 3 4 5 8 5"></path></svg>
-            </div>
-            <h3>Every mutation gets a checkpoint</h3>
-            <p>
-              The local vault is a Git repository. Creates, edits, forks, and intentional
-              re-forks are auto-committed, turning history into a built-in safety net.
-            </p>
-            <div class="commit-list" aria-hidden="true">
-              <div><span class="commit-dot"></span><strong>Fork: compare onboarding paths</strong><small>just now</small></div>
-              <div><span class="commit-dot"></span><strong>Update: product vision</strong><small>2 min</small></div>
-              <div><span class="commit-dot"></span><strong>Create: research direction</strong><small>8 min</small></div>
-              <div class="commit-line"></div>
-            </div>
-          </article>
-          <article class="feature-card agent-card reveal">
-            <div class="feature-icon">
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 9h8M8 13h5M12 3v3M5 7h14v12H5z"></path><circle cx="8" cy="16" r=".8"></circle><circle cx="16" cy="16" r=".8"></circle></svg>
-            </div>
-            <h3>A graph other agents can understand</h3>
-            <p>
-              The vault contract tells tools what is authoritative, how to reconstruct lineage,
-              how to mutate safely, and why sibling conversations must remain isolated.
-            </p>
-            <div class="agent-command" aria-hidden="true">
-              <span>$</span> <code>agent explore ~/web-context-graph-data</code><i></i>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="real-product section-warm" aria-labelledby="product-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Working software, open source</p>
-          <h2 id="product-title">A real MVP you can inspect today.</h2>
-          <p>
-            The current build combines a FastAPI backend, a React workspace, GitHub Copilot CLI,
-            and a plain-file vault—running locally on your machine.
-          </p>
-        </div>
-        <figure class="product-shot reveal">
-          <img src="assets/product-graph.png" width="1265" height="623" loading="lazy" alt="Web-Context Graph application showing three connected conversation nodes in Graph View">
-          <figcaption>Graph View from the current single-user local MVP.</figcaption>
-        </figure>
-      </section>
-
-      <section class="scope" aria-labelledby="scope-title">
-        <div class="scope-card reveal">
-          <div>
-            <p class="eyebrow">Where it is today</p>
-            <h2 id="scope-title">Purposefully local.<br>Built for one curious mind.</h2>
+        <div class="file-card reveal" role="img" aria-label="Web-Context Graph data folder with an index and thread folders containing Markdown and YAML">
+          <span class="file-label">Your graph on disk</span>
+          <div class="file-root"><b>⌄</b><strong>web-context-graph-data</strong></div>
+          <div class="file-row depth-one accent">M↓ <span>index.md</span></div>
+          <div class="file-row depth-one"><b>⌄</b><span>threads</span></div>
+          <div class="file-thread">
+            <b>⌄</b>
+            <strong>Product direction</strong>
+            <small>thread.md · meta.yaml</small>
           </div>
-          <div class="scope-content">
-            <p>
-              Web-Context Graph is an early single-user MVP, not a hosted service. It runs on
-              localhost, uses your authenticated Copilot CLI, and keeps data on your machine.
-            </p>
-            <ul>
-              <li><span>✓</span> Branching conversations and isolated lineage</li>
-              <li><span>✓</span> Graph, knowledge-tree, and Files experiences</li>
-              <li><span>✓</span> Local Markdown/YAML vault with Git history</li>
-              <li class="future"><span>→</span> Multi-user hosting and sync are future work</li>
-            </ul>
+          <div class="file-thread">
+            <b>⌄</b>
+            <strong>Quieter approach</strong>
+            <small>thread.md · meta.yaml</small>
+          </div>
+          <div class="file-thread">
+            <b>⌄</b>
+            <strong>Final shape</strong>
+            <small>thread.md · meta.yaml</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="status" aria-labelledby="status-title">
+        <div class="status-card reveal">
+          <div>
+            <p class="kicker">Working software</p>
+            <h2 id="status-title">Local by design.</h2>
+          </div>
+          <div class="status-copy">
+            <p>Run one command. Web-Context Graph uses your authenticated Copilot CLI and keeps the vault on your machine.</p>
+            <code>./scripts/run-local.sh</code>
+            <p class="status-note">The current release is an open-source, single-user MVP—not a hosted service.</p>
           </div>
         </div>
       </section>
 
       <section class="final-cta" aria-labelledby="cta-title">
-        <div class="cta-graph" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span>
+        <div class="final-mark reveal" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <circle cx="8" cy="9" r="3"></circle>
+            <circle cx="24" cy="8" r="3"></circle>
+            <circle cx="16" cy="23" r="3"></circle>
+            <path d="M10.5 10.8 14.5 20M21.5 10 17.5 20M11 9h10"></path>
+          </svg>
         </div>
-        <p class="eyebrow eyebrow-light reveal">The next thought is yours</p>
-        <h2 id="cta-title" class="reveal">Stop scrolling through answers.<br><em>Start mapping ideas.</em></h2>
-        <p class="reveal">Read the code, run the MVP, or tell Jorge where you’d branch next.</p>
-        <div class="cta-actions reveal">
-          <a class="button button-light" href="https://github.com/ortizjorge639/web-context-graph">View the GitHub repository</a>
-          <a class="button button-outline-light" href="https://x.com/jojiguy639">Follow Jorge on X</a>
+        <p class="kicker reveal">Your next direction</p>
+        <h2 id="cta-title" class="reveal">Think in branches.</h2>
+        <p class="reveal">Keep every path within reach.</p>
+        <div class="actions actions-centered reveal">
+          <a class="button button-dark" href="https://github.com/ortizjorge639/web-context-graph">View the GitHub repository</a>
+          <a class="button button-quiet" href="https://x.com/jojiguy639">Follow Jorge on X</a>
         </div>
       </section>
     </main>
 
     <footer>
-      <a class="brand footer-brand" href="#top">
-        <svg aria-hidden="true" viewBox="0 0 40 40">
-          <circle cx="9" cy="20" r="4"></circle><circle cx="30" cy="9" r="4"></circle>
-          <circle cx="30" cy="31" r="4"></circle><path d="M13 19c7-1 8-8 13-9M13 21c7 1 8 8 13 9"></path>
-        </svg>
-        <span>Web-Context Graph</span>
+      <a class="brand" href="#top">
+        <span class="brand-mark">
+          <svg aria-hidden="true" viewBox="0 0 32 32">
+            <circle cx="8" cy="9" r="3"></circle>
+            <circle cx="24" cy="8" r="3"></circle>
+            <circle cx="16" cy="23" r="3"></circle>
+            <path d="M10.5 10.8 14.5 20M21.5 10 17.5 20M11 9h10"></path>
+          </svg>
+        </span>
+        <span>Web-Context</span>
       </a>
       <p>Open-source exploration by Jorge Ortiz Flores.</p>
       <nav aria-label="Contact links">
