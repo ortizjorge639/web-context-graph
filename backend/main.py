@@ -6,13 +6,16 @@ sees ITS OWN lineage chain, never a sibling's).
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Literal
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
+import copy
 import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import tempfile
+import threading
 import time
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +31,31 @@ from tutorial_seed import TutorialResetBlocked, ensure_tutorial, tutorial_status
 
 VAULT_ROOT = Path.home() / "web-context-graph-data"
 store = ThreadStore(vault_root=VAULT_ROOT)
+_thread_locks: dict[str, threading.Lock] = {}
+_thread_locks_guard = threading.Lock()
+
+
+def _thread_lock(thread_id: str) -> threading.Lock:
+    with _thread_locks_guard:
+        return _thread_locks.setdefault(thread_id, threading.Lock())
+
+
+@contextmanager
+def _locked_threads(thread_ids: list[str]):
+    acquired = []
+    try:
+        for thread_id in sorted(set(thread_ids)):
+            lock = _thread_lock(thread_id)
+            if not lock.acquire(blocking=False):
+                raise HTTPException(
+                    409,
+                    f"Conversation is busy: {thread_id}",
+                )
+            acquired.append(lock)
+        yield
+    finally:
+        for lock in reversed(acquired):
+            lock.release()
 
 
 @asynccontextmanager
@@ -465,22 +493,24 @@ def update_thread(thread_id: str, req: UpdateThreadRequest):
         meta = store.load_meta(thread_id)
     except FileNotFoundError:
         raise HTTPException(404, "Thread not found")
-    title = None
-    if req.title is not None:
-        title = " ".join(req.title.split())
-        if not title:
-            raise HTTPException(400, "Conversation title cannot be empty")
-    if req.pinned is not None and meta.forked_from:
-        raise HTTPException(400, "Only root conversations can be pinned")
-    if title is not None:
-        meta = store.rename_thread(thread_id, title[:120])
-    if req.pinned is not None:
-        meta.pinned = req.pinned
-        meta.updated_at = datetime.now(timezone.utc).isoformat()
-        store._write_meta(meta)
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message=f"update thread {thread_id}")
-    return meta.__dict__
+    with _locked_threads([thread_id]):
+        meta = store.load_meta(thread_id)
+        title = None
+        if req.title is not None:
+            title = " ".join(req.title.split())
+            if not title:
+                raise HTTPException(400, "Conversation title cannot be empty")
+        if req.pinned is not None and meta.forked_from:
+            raise HTTPException(400, "Only root conversations can be pinned")
+        if title is not None:
+            meta = store.rename_thread(thread_id, title[:120])
+        if req.pinned is not None:
+            meta.pinned = req.pinned
+            meta.updated_at = datetime.now(timezone.utc).isoformat()
+            store._write_meta(meta)
+        rebuild_index(VAULT_ROOT)
+        autocommit(VAULT_ROOT, message=f"update thread {thread_id}")
+        return meta.__dict__
 
 
 @app.post("/threads/reorder")
@@ -498,12 +528,13 @@ def reorder_threads(req: ReorderThreadsRequest):
         if meta.forked_from or meta.pinned:
             raise HTTPException(400, "Only unpinned root conversations can be reordered")
         metas.append(meta)
-    for order, meta in enumerate(metas):
-        meta.sidebar_order = order
-        store._write_meta(meta)
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message="reorder root conversations")
-    return {"ok": True}
+    with _locked_threads([meta.id for meta in metas]):
+        for order, meta in enumerate(metas):
+            meta.sidebar_order = order
+            store._write_meta(meta)
+        rebuild_index(VAULT_ROOT)
+        autocommit(VAULT_ROOT, message="reorder root conversations")
+        return {"ok": True}
 
 
 @app.delete("/threads/{thread_id}")
@@ -512,10 +543,19 @@ def delete_thread(thread_id: str):
         meta = store.load_meta(thread_id)
     except FileNotFoundError:
         raise HTTPException(404, "Thread not found")
-    deleted_ids = store.delete_thread_recursive(thread_id)
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message=f"delete thread tree {thread_id}")
-    return {"ok": True, "deleted_ids": deleted_ids, "parent_id": meta.forked_from["thread_id"] if meta.forked_from else None}
+    deleted_ids = store.descendant_ids(thread_id)
+    parent_id = meta.forked_from["thread_id"] if meta.forked_from else None
+    with _locked_threads([*deleted_ids, *([parent_id] if parent_id else [])]):
+        if store.descendant_ids(thread_id) != deleted_ids:
+            raise HTTPException(409, "The branch changed; retry deletion")
+        deleted_ids = store.delete_thread_recursive(thread_id)
+        rebuild_index(VAULT_ROOT)
+        autocommit(VAULT_ROOT, message=f"delete thread tree {thread_id}")
+        return {
+            "ok": True,
+            "deleted_ids": deleted_ids,
+            "parent_id": parent_id,
+        }
 
 
 def _lineage_depth(thread_id: str) -> int:
@@ -581,13 +621,24 @@ def _display_lineage_chunks(thread_id: str) -> list[dict]:
         if matched >= source_length:
             snapshot_end = start + matched
             if matched == len(parent_texts):
-                child_user_chunks = [
-                    index
-                    for index in range(snapshot_end, len(own_chunks))
-                    if own_chunks[index]["text"].startswith("**user:**")
+                metric_starts = [
+                    metric.get("first_chunk_order")
+                    for metric in meta.message_metrics
+                    if isinstance(metric, dict)
+                    and isinstance(metric.get("first_chunk_order"), int)
                 ]
-                if child_user_chunks:
-                    snapshot_end = child_user_chunks[-1]
+                if metric_starts:
+                    first_reply = min(metric_starts)
+                    child_user_chunks = [
+                        index
+                        for index in range(
+                            snapshot_end,
+                            min(first_reply, len(own_chunks)),
+                        )
+                        if own_chunks[index]["text"].startswith("**user:**")
+                    ]
+                    if child_user_chunks:
+                        snapshot_end = child_user_chunks[-1]
             own_chunks = own_chunks[:start] + own_chunks[snapshot_end:]
             break
 
@@ -622,18 +673,19 @@ def get_thread(thread_id: str):
 
 @app.post("/threads/{thread_id}/messages")
 def send_message(thread_id: str, req: MessageRequest):
-    try:
-        meta = store.load_meta(thread_id)
-    except FileNotFoundError:
-        raise HTTPException(404, "Thread not found")
-    store.append_message(thread_id, req.role, req.content)
-    if req.role == "user":
-        prompt = req.content if meta.copilot_initialized else _build_lineage_content(thread_id)
-        reply = ask_copilot(meta.copilot_session_id, prompt)
-        store.append_message(thread_id, "assistant", reply)
-        store.mark_copilot_initialized(thread_id)
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message=f"message in {thread_id}")
+    with _locked_threads([thread_id]):
+        try:
+            meta = store.load_meta(thread_id)
+        except FileNotFoundError:
+            raise HTTPException(404, "Thread not found")
+        store.append_message(thread_id, req.role, req.content)
+        if req.role == "user":
+            prompt = req.content if meta.copilot_initialized else _build_lineage_content(thread_id)
+            reply = ask_copilot(meta.copilot_session_id, prompt)
+            store.append_message(thread_id, "assistant", reply)
+            store.mark_copilot_initialized(thread_id)
+        rebuild_index(VAULT_ROOT)
+        autocommit(VAULT_ROOT, message=f"message in {thread_id}")
     return {"ok": True}
 
 
@@ -645,8 +697,12 @@ def stream_message(thread_id: str, req: MessageRequest):
         raise HTTPException(404, "Thread not found")
     if req.role != "user":
         raise HTTPException(400, "Only user messages can start an assistant stream")
+    lock = _thread_lock(thread_id)
+    if not lock.acquire(blocking=False):
+        raise HTTPException(409, "Conversation is busy")
 
-    def generate():
+    def generate_locked():
+        meta = store.load_meta(thread_id)
         started_clock = time.monotonic()
         yield _activity("save", "Saving your message", "running")
         store.append_message(thread_id, "user", req.content)
@@ -718,6 +774,12 @@ def stream_message(thread_id: str, req: MessageRequest):
                 autocommit(VAULT_ROOT, message=f"partial response in {thread_id}")
             yield json.dumps({"type": "error", "message": str(error)}) + "\n"
 
+    def generate():
+        try:
+            yield from generate_locked()
+        finally:
+            lock.release()
+
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 
 
@@ -734,18 +796,22 @@ def fork_thread(thread_id: str, req: ForkRequest):
         raise HTTPException(400, "A branch prompt is required")
     if prompt:
         title = " ".join(prompt.split())[:54]
-    if req.chunk_id not in {
-        chunk.id for chunk in chunk_markdown(store.read_content(thread_id), thread_id)
-    }:
-        raise HTTPException(400, "Fork chunk does not exist in the parent thread")
-    child = store.create_thread(
-        title=title,
-        forked_from={"thread_id": thread_id, "chunk_id": req.chunk_id},
-    )
-    store.append_message(child.id, "system", f"[Forked from chunk {req.chunk_id}]")
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message=f"fork thread {thread_id} into {child.id}")
-    return store.load_meta(child.id).__dict__
+    with _locked_threads([thread_id]):
+        if req.chunk_id not in {
+            chunk.id for chunk in chunk_markdown(
+                store.read_content(thread_id),
+                thread_id,
+            )
+        }:
+            raise HTTPException(400, "Fork chunk does not exist in the parent thread")
+        child = store.create_thread(
+            title=title,
+            forked_from={"thread_id": thread_id, "chunk_id": req.chunk_id},
+        )
+        store.append_message(child.id, "system", f"[Forked from chunk {req.chunk_id}]")
+        rebuild_index(VAULT_ROOT)
+        autocommit(VAULT_ROOT, message=f"fork thread {thread_id} into {child.id}")
+        return store.load_meta(child.id).__dict__
 
 
 class EditRequest(BaseModel):
@@ -768,34 +834,109 @@ def edit_in_place(thread_id: str, req: EditRequest):
         meta = store.load_meta(thread_id)
     except FileNotFoundError:
         raise HTTPException(404, "Thread not found")
-    old_chunks = {
-        chunk.id: chunk.text
-        for chunk in chunk_markdown(store.read_content(thread_id), thread_id)
+    with _locked_threads([thread_id]):
+        meta = store.load_meta(thread_id)
+        old_chunks = {
+            chunk.id: chunk.text
+            for chunk in chunk_markdown(store.read_content(thread_id), thread_id)
+        }
+        new_chunks = {
+            chunk.id: chunk.text
+            for chunk in chunk_markdown(req.new_content, thread_id)
+        }
+        changed_anchors = [
+            child["chunk_id"]
+            for child in meta.forked_children
+            if new_chunks.get(child["chunk_id"]) != old_chunks.get(child["chunk_id"])
+        ]
+        if changed_anchors:
+            raise HTTPException(
+                409,
+                {
+                    "message": "Edit would invalidate existing branch points",
+                    "chunk_ids": changed_anchors,
+                },
+            )
+        path = store._thread_dir(thread_id) / "thread.md"
+        path.write_text(req.new_content)
+        meta.updated_at = datetime.now(timezone.utc).isoformat()
+        store._write_meta(meta)
+        rebuild_index(VAULT_ROOT)
+        autocommit(VAULT_ROOT, message=f"edit thread {thread_id}")
+        return {"ok": True, "cascaded": False}
+
+
+def _git_index_tree() -> str:
+    return subprocess.run(
+        ["git", "write-tree"],
+        cwd=VAULT_ROOT,
+        capture_output=True,
+        check=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _restore_git_index(tree: str) -> None:
+    subprocess.run(
+        ["git", "read-tree", tree],
+        cwd=VAULT_ROOT,
+        capture_output=True,
+        check=True,
+    )
+
+
+def _perform_refork(
+    thread_id: str,
+    req: ReforkRequest,
+    parent,
+    deleted_ids: list[str],
+) -> dict:
+    original_parent = copy.deepcopy(parent)
+    index_tree = _git_index_tree()
+    child = None
+    with tempfile.TemporaryDirectory(prefix="wcg-refork-") as backup_root:
+        backup_root = Path(backup_root)
+        for deleted_id in deleted_ids:
+            shutil.copytree(
+                store._thread_dir(deleted_id),
+                backup_root / deleted_id,
+            )
+        try:
+            child = store.create_thread(
+                title=req.new_title,
+                forked_from={"thread_id": thread_id, "chunk_id": req.chunk_id},
+            )
+            store.delete_thread_recursive(req.old_child_thread_id)
+            rebuild_index(VAULT_ROOT)
+            autocommit(
+                VAULT_ROOT,
+                message=(
+                    f"refork {thread_id}: delete "
+                    f"{req.old_child_thread_id}, create {child.id}"
+                ),
+                check=True,
+            )
+        except Exception as error:
+            if child and store._thread_dir(child.id).exists():
+                shutil.rmtree(store._thread_dir(child.id))
+            for deleted_id in deleted_ids:
+                destination = store._thread_dir(deleted_id)
+                if destination.exists():
+                    shutil.rmtree(destination)
+                shutil.copytree(backup_root / deleted_id, destination)
+            store._write_meta(original_parent)
+            rebuild_index(VAULT_ROOT)
+            _restore_git_index(index_tree)
+            raise HTTPException(
+                500,
+                f"Re-fork failed; the original branch was restored: {error}",
+            ) from error
+    return {
+        "ok": True,
+        "cascaded": True,
+        "deleted_thread_ids": deleted_ids,
+        "new_thread": child.__dict__,
     }
-    new_chunks = {
-        chunk.id: chunk.text
-        for chunk in chunk_markdown(req.new_content, thread_id)
-    }
-    changed_anchors = [
-        child["chunk_id"]
-        for child in meta.forked_children
-        if new_chunks.get(child["chunk_id"]) != old_chunks.get(child["chunk_id"])
-    ]
-    if changed_anchors:
-        raise HTTPException(
-            409,
-            {
-                "message": "Edit would invalidate existing branch points",
-                "chunk_ids": changed_anchors,
-            },
-        )
-    path = store._thread_dir(thread_id) / "thread.md"
-    path.write_text(req.new_content)
-    meta.updated_at = datetime.now(timezone.utc).isoformat()
-    store._write_meta(meta)
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message=f"edit thread {thread_id}")
-    return {"ok": True, "cascaded": False}
 
 
 @app.post("/threads/{thread_id}/refork")
@@ -808,7 +949,7 @@ def refork(thread_id: str, req: ReforkRequest):
     this endpoint itself performs the deletion unconditionally once called.
     """
     try:
-        store.load_meta(thread_id)
+        parent = store.load_meta(thread_id)
         old_child = store.load_meta(req.old_child_thread_id)
     except FileNotFoundError:
         raise HTTPException(404, "Thread not found")
@@ -818,11 +959,27 @@ def refork(thread_id: str, req: ReforkRequest):
         chunk.id for chunk in chunk_markdown(store.read_content(thread_id), thread_id)
     }:
         raise HTTPException(400, "Fork chunk does not exist in the parent thread")
-    deleted_ids = store.delete_thread_recursive(req.old_child_thread_id)
-    child = store.create_thread(
-        title=req.new_title,
-        forked_from={"thread_id": thread_id, "chunk_id": req.chunk_id},
-    )
-    rebuild_index(VAULT_ROOT)
-    autocommit(VAULT_ROOT, message=f"refork {thread_id}: delete {req.old_child_thread_id}, create {child.id}")
-    return {"ok": True, "cascaded": True, "deleted_thread_ids": deleted_ids, "new_thread": child.__dict__}
+    deleted_ids = store.descendant_ids(req.old_child_thread_id)
+    ensure_git_repo(VAULT_ROOT)
+    with _locked_threads([thread_id, *deleted_ids]):
+        parent = store.load_meta(thread_id)
+        old_child = store.load_meta(req.old_child_thread_id)
+        if (
+            not old_child.forked_from
+            or old_child.forked_from["thread_id"] != thread_id
+        ):
+            raise HTTPException(
+                400,
+                "The old branch is not a direct child of this thread",
+            )
+        locked_deleted_ids = store.descendant_ids(req.old_child_thread_id)
+        if locked_deleted_ids != deleted_ids:
+            raise HTTPException(409, "The branch changed; retry re-fork")
+        if req.chunk_id not in {
+            chunk.id for chunk in chunk_markdown(
+                store.read_content(thread_id),
+                thread_id,
+            )
+        }:
+            raise HTTPException(400, "Fork chunk does not exist in the parent thread")
+        return _perform_refork(thread_id, req, parent, deleted_ids)

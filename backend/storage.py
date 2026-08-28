@@ -9,7 +9,10 @@ raw conversation content, no duplicated frontmatter.
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
+import os
 import re
+import shutil
+import tempfile
 import uuid
 import yaml
 
@@ -116,15 +119,19 @@ class ThreadStore:
         )
         thread_dir = self._thread_dir(thread_id)
         thread_dir.mkdir(parents=True, exist_ok=False)
-        (thread_dir / "thread.md").write_text(f"# {title}\n\n")
-        self._write_meta(meta)
+        try:
+            (thread_dir / "thread.md").write_text(f"# {title}\n\n")
+            self._write_meta(meta)
 
-        if forked_from:
-            parent = self.load_meta(forked_from["thread_id"])
-            parent.forked_children.append(
-                {"thread_id": thread_id, "chunk_id": forked_from["chunk_id"]}
-            )
-            self._write_meta(parent)
+            if forked_from:
+                parent = self.load_meta(forked_from["thread_id"])
+                parent.forked_children.append(
+                    {"thread_id": thread_id, "chunk_id": forked_from["chunk_id"]}
+                )
+                self._write_meta(parent)
+        except Exception:
+            shutil.rmtree(thread_dir, ignore_errors=True)
+            raise
 
         return meta
 
@@ -136,7 +143,24 @@ class ThreadStore:
 
     def _write_meta(self, meta: ThreadMeta) -> None:
         path = self._thread_dir(meta.id) / "meta.yaml"
-        path.write_text(yaml.safe_dump(asdict(meta), sort_keys=False))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                "w",
+                dir=path.parent,
+                prefix=".meta.",
+                suffix=".yaml.tmp",
+                delete=False,
+            ) as temporary:
+                yaml.safe_dump(asdict(meta), temporary, sort_keys=False)
+                temporary.flush()
+                os.fsync(temporary.fileno())
+                temporary_path = Path(temporary.name)
+            os.replace(temporary_path, path)
+        finally:
+            if temporary_path and temporary_path.exists():
+                temporary_path.unlink()
 
     def append_message(self, thread_id: str, role: str, content: str) -> None:
         path = self._thread_dir(thread_id) / "thread.md"
@@ -177,10 +201,14 @@ class ThreadStore:
         Absolute deletion (D7): deletes this thread and every thread that
         (transitively) forked from it. Returns the list of deleted thread IDs.
         """
-        meta = self.load_meta(thread_id)
-        deleted = [thread_id]
-        for fc in list(meta.forked_children):
-            deleted.extend(self.delete_thread_recursive(fc["thread_id"]))
-        import shutil
-        shutil.rmtree(self._thread_dir(thread_id))
+        deleted = self.descendant_ids(thread_id)
+        for deleted_id in reversed(deleted):
+            shutil.rmtree(self._thread_dir(deleted_id))
         return deleted
+
+    def descendant_ids(self, thread_id: str) -> list[str]:
+        meta = self.load_meta(thread_id)
+        descendants = [thread_id]
+        for child in meta.forked_children:
+            descendants.extend(self.descendant_ids(child["thread_id"]))
+        return descendants

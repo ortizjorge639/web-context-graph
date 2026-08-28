@@ -1,4 +1,5 @@
 import tempfile
+import shutil
 from pathlib import Path
 from unittest.mock import patch
 
@@ -104,3 +105,122 @@ def test_refork_deletes_old_downstream_branch_absolutely():
 
         deleted = client.get(f"/threads/{old_child['id']}")
         assert deleted.status_code == 404
+
+
+def test_refork_restores_old_branch_when_replacement_creation_fails():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        root = client.post("/threads", json={"title": "Root"}).json()
+        client.post(
+            f"/threads/{root['id']}/messages",
+            json={"role": "user", "content": "Hi"},
+        )
+        chunk_id = f"{root['id']}#c0"
+        old_child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": chunk_id, "title": "Old branch"},
+        ).json()
+
+        with patch("main.store.create_thread", side_effect=OSError("disk full")):
+            response = client.post(
+                f"/threads/{root['id']}/refork",
+                json={
+                    "old_child_thread_id": old_child["id"],
+                    "chunk_id": chunk_id,
+                    "new_title": "Replacement",
+                },
+            )
+
+        assert response.status_code == 500
+        assert "original branch was restored" in response.json()["detail"]
+        assert client.get(f"/threads/{old_child['id']}").status_code == 200
+
+
+def test_refork_restores_old_branch_after_destructive_failure():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        client.post(
+            f"/threads/{root['id']}/messages",
+            json={"role": "user", "content": "Hi"},
+        )
+        chunk_id = f"{root['id']}#c0"
+        old_child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": chunk_id, "title": "Old branch"},
+        ).json()
+
+        def fail_after_delete(thread_id):
+            shutil.rmtree(main.store._thread_dir(thread_id))
+            raise OSError("delete interrupted")
+
+        with patch(
+            "main.store.delete_thread_recursive",
+            side_effect=fail_after_delete,
+        ):
+            response = client.post(
+                f"/threads/{root['id']}/refork",
+                json={
+                    "old_child_thread_id": old_child["id"],
+                    "chunk_id": chunk_id,
+                    "new_title": "Replacement",
+                },
+            )
+
+        assert response.status_code == 500
+        assert client.get(f"/threads/{old_child['id']}").status_code == 200
+        threads = client.get("/threads").json()
+        assert {thread["id"] for thread in threads} == {root["id"], old_child["id"]}
+        restored_parent = main.store.load_meta(root["id"])
+        assert restored_parent.forked_children == [{
+            "thread_id": old_child["id"],
+            "chunk_id": chunk_id,
+        }]
+
+
+def test_refork_restores_git_index_when_commit_fails():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        client.post(
+            f"/threads/{root['id']}/messages",
+            json={"role": "user", "content": "Hi"},
+        )
+        chunk_id = f"{root['id']}#c0"
+        old_child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": chunk_id, "title": "Old branch"},
+        ).json()
+
+        def fail_after_staging(vault_root, _message, **_kwargs):
+            main.subprocess.run(
+                ["git", "add", "-A"],
+                cwd=vault_root,
+                check=True,
+            )
+            raise OSError("commit interrupted")
+
+        with patch("main.autocommit", side_effect=fail_after_staging):
+            response = client.post(
+                f"/threads/{root['id']}/refork",
+                json={
+                    "old_child_thread_id": old_child["id"],
+                    "chunk_id": chunk_id,
+                    "new_title": "Replacement",
+                },
+            )
+
+        assert response.status_code == 500
+        assert client.get(f"/threads/{old_child['id']}").status_code == 200
+        staged = main.subprocess.run(
+            ["git", "diff", "--cached", "--name-only"],
+            cwd=tmp,
+            capture_output=True,
+            check=True,
+            text=True,
+        )
+        assert staged.stdout == ""

@@ -15,9 +15,16 @@ def ensure_git_repo(vault_root: Path) -> None:
         subprocess.run(["git", "config", "user.name", "Web Context Graph"], cwd=vault_root, capture_output=True)
 
 
-def autocommit(vault_root: Path, message: str) -> None:
-    subprocess.run(["git", "add", "-A"], cwd=vault_root, capture_output=True)
+def autocommit(vault_root: Path, message: str, *, check: bool = False) -> None:
+    subprocess.run(
+        ["git", "add", "-A"],
+        cwd=vault_root,
+        capture_output=True,
+        check=check,
+    )
     subprocess.run(
         ["git", "commit", "-m", message, "--allow-empty-message", "--quiet"],
-        cwd=vault_root, capture_output=True,
+        cwd=vault_root,
+        capture_output=True,
+        check=check,
     )

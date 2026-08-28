@@ -1,5 +1,7 @@
 import tempfile
 import json
+import threading
+import time
 from pathlib import Path
 from unittest.mock import patch
 import pytest
@@ -161,6 +163,15 @@ def test_legacy_embedded_lineage_removes_deleted_parent_suffix():
             f"[Forked from chunk {root['id']}#c2]\n\n{lineage}",
         )
         main.store.append_message(child.id, "user", "Child-only question")
+        first_reply = len(main.chunk_markdown(
+            main.store.read_content(child.id),
+            child.id,
+        ))
+        main.store.append_message(child.id, "assistant", "Child-only answer")
+        main.store.record_message_metrics(child.id, {
+            "first_chunk_order": first_reply,
+            "last_chunk_order": first_reply,
+        })
         root_path = Path(tmp, "threads", root["id"], "thread.md")
         root_path.write_text(
             "# Root\n\n**user:** Ancestor question\n\n**assistant:** Fork point\n"
@@ -171,6 +182,83 @@ def test_legacy_embedded_lineage_removes_deleted_parent_suffix():
         visible = "\n".join(chunk["text"] for chunk in detail["chunks"])
         assert "Old parent suffix" not in visible
         assert "Child-only question" in visible
+
+
+def test_legacy_lineage_without_metrics_preserves_child_turns():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(root["id"], "user", "Ancestor question")
+        main.store.append_message(root["id"], "assistant", "Fork point")
+        child = main.store.create_thread(
+            title="Legacy child",
+            forked_from={"thread_id": root["id"], "chunk_id": f"{root['id']}#c2"},
+        )
+        main.store.append_message(
+            child.id,
+            "system",
+            (
+                f"[Forked from chunk {root['id']}#c2]\n\n"
+                f"{main._build_lineage_content(root['id'])}"
+            ),
+        )
+        main.store.append_message(child.id, "user", "First child question")
+        main.store.append_message(child.id, "assistant", "First child answer")
+        main.store.append_message(child.id, "user", "Second child question")
+        main.store.append_message(child.id, "assistant", "Second child answer")
+
+        visible = client.get(f"/threads/{child.id}").json()["content"]
+
+        assert "First child question" in visible
+        assert "First child answer" in visible
+        assert "Second child question" in visible
+        assert "Second child answer" in visible
+
+
+def test_legacy_lineage_preserves_complete_multi_turn_child_history():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(root["id"], "user", "Ancestor question")
+        main.store.append_message(root["id"], "assistant", "Fork point")
+        main.store.append_message(root["id"], "user", "Old parent suffix")
+        child = main.store.create_thread(
+            title="Legacy child",
+            forked_from={"thread_id": root["id"], "chunk_id": f"{root['id']}#c2"},
+        )
+        lineage = main._build_lineage_content(root["id"])
+        main.store.append_message(
+            child.id,
+            "system",
+            f"[Forked from chunk {root['id']}#c2]\n\n{lineage}",
+        )
+        main.store.append_message(child.id, "user", "First child question")
+        first_reply = len(main.chunk_markdown(
+            main.store.read_content(child.id),
+            child.id,
+        ))
+        main.store.append_message(child.id, "assistant", "First child answer")
+        main.store.record_message_metrics(child.id, {
+            "first_chunk_order": first_reply,
+            "last_chunk_order": first_reply,
+        })
+        main.store.append_message(child.id, "user", "Second child question")
+        main.store.append_message(child.id, "assistant", "Second child answer")
+        Path(tmp, "threads", root["id"], "thread.md").write_text(
+            "# Root\n\n**user:** Ancestor question\n\n**assistant:** Fork point\n"
+        )
+
+        visible = client.get(f"/threads/{child.id}").json()["content"]
+
+        assert "Old parent suffix" not in visible
+        assert "First child question" in visible
+        assert "First child answer" in visible
+        assert "Second child question" in visible
+        assert "Second child answer" in visible
 
 
 def test_update_thread_validates_pin_before_renaming():
@@ -353,6 +441,52 @@ def test_stream_message_persists_partial_reply_on_failure():
         assert "Partial answer" in main.store.read_content(thread["id"])
         metrics = main.store.load_meta(thread["id"]).message_metrics[-1]
         assert metrics["interrupted"] is True
+
+
+def test_concurrent_streams_for_one_thread_fail_fast():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        thread = client.post("/threads", json={"title": "Serialized"}).json()
+        first_started = threading.Event()
+        release_first = threading.Event()
+        call_count = 0
+        call_count_lock = threading.Lock()
+
+        def controlled_stream(*_args):
+            nonlocal call_count
+            with call_count_lock:
+                call_count += 1
+                current_call = call_count
+            if current_call == 1:
+                first_started.set()
+                assert release_first.wait(timeout=2)
+            yield {"type": "delta", "content": f"Reply {current_call}"}
+
+        responses = []
+
+        def post_message(content):
+            responses.append(client.post(
+                f"/threads/{thread['id']}/messages/stream",
+                json={"role": "user", "content": content},
+            ))
+
+        with patch("main.stream_copilot", side_effect=controlled_stream):
+            first = threading.Thread(target=post_message, args=("First",))
+            second = threading.Thread(target=post_message, args=("Second",))
+            first.start()
+            assert first_started.wait(timeout=2)
+            second.start()
+            time.sleep(0.1)
+            assert call_count == 1
+            release_first.set()
+            first.join(timeout=2)
+            second.join(timeout=2)
+
+        assert len(responses) == 2
+        assert sorted(response.status_code for response in responses) == [200, 409]
+        content = client.get(f"/threads/{thread['id']}").json()["raw_content"]
+        assert content.index("First") < content.index("Reply 1")
+        assert "Second" not in content
 
 
 def test_missing_thread_mutations_return_404():
