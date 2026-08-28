@@ -41,7 +41,12 @@ a {
   color: inherit;
 }
 
-img,
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 svg {
   display: block;
 }
@@ -280,6 +285,9 @@ h1 {
 
 .hero-shot,
 .tutorial-frame {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   margin: 0;
 }
 
@@ -793,8 +801,8 @@ footer nav {
   }
 
   .hero-shot {
-    width: calc(100% + 12px);
-    margin-left: -6px;
+    width: 100%;
+    margin-left: 0;
   }
 
   .section-intro h2,
@@ -814,8 +822,8 @@ footer nav {
   }
 
   .tutorial-frame {
-    width: calc(100% + 12px);
-    margin-left: -6px;
+    width: 100%;
+    margin-left: 0;
   }
 
   .tutorial-frame figcaption {
