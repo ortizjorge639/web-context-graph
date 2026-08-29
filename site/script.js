@@ -19,6 +19,7 @@ const waypoints = [
 
 function setActiveStep(index) {
   if (!stage) return;
+  if (stage.dataset.active === String(index)) return;
 
   stage.dataset.active = String(index);
   steps.forEach((step, stepIndex) => {
@@ -31,28 +32,30 @@ function setActiveStep(index) {
   });
 }
 
-if ("IntersectionObserver" in window) {
-  const stepObserver = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-      if (visible[0]) {
-        setActiveStep(Number(visible[0].target.dataset.step));
-      }
-    },
-    { rootMargin: "-35% 0px -35% 0px", threshold: [0, 0.25, 0.5, 0.75] },
-  );
-
-  steps.forEach((step) => stepObserver.observe(step));
-}
-
 let frameRequested = false;
+
+function updateActiveStep() {
+  const activationLine = window.innerHeight / 2;
+  let closestIndex = 0;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  steps.forEach((step, index) => {
+    const bounds = step.getBoundingClientRect();
+    const distance = Math.abs(bounds.top + bounds.height / 2 - activationLine);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = index;
+    }
+  });
+
+  setActiveStep(closestIndex);
+}
 
 function drawStory() {
   frameRequested = false;
   if (!animatedLayout.matches || !story || !stage || !traveler) return;
+
+  updateActiveStep();
 
   const bounds = story.getBoundingClientRect();
   const travel = Math.max(story.offsetHeight - window.innerHeight, 1);
