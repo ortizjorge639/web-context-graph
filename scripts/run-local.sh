@@ -52,7 +52,7 @@ then
   exit 1
 fi
 
-printf 'Starting Web-Context Graph at %s\n' "$URL"
+printf 'Starting Lineage App at %s\n' "$URL"
 printf 'Vault: %s\n' "${WCG_VAULT_ROOT:-$HOME/web-context-graph-data}"
 
 (

@@ -33,7 +33,7 @@ def rebuild_index(vault_root: Path) -> None:
             meta.forked_children = repaired
             store._write_meta(meta)
 
-    lines = ["# Web-Context Graph Index", "", "> Auto-regenerated. Do not hand-edit.", ""]
+    lines = ["# Lineage App Knowledge Tree", "", "> Auto-regenerated. Do not hand-edit.", ""]
     visited = set()
 
     def safe_title(title: str) -> str:

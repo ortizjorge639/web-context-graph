@@ -21,6 +21,7 @@ def test_create_root_thread_generates_safe_id_and_folder():
         assert (Path(tmp) / "threads" / meta.id / "meta.yaml").exists()
         guide = Path(tmp) / "AGENTS.md"
         assert guide.exists()
+        assert "Lineage App conversation vault" in guide.read_text()
         assert "Read `index.md`" in guide.read_text()
         assert "Never include sibling branches" in guide.read_text()
         assert "!" not in meta.id and "?" not in meta.id

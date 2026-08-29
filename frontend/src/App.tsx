@@ -542,8 +542,8 @@ function App() {
         <div className="sidebar-brand">
           <span className="sidebar-mark"><ProductMark /></span>
           <div className="sidebar-brand-copy">
-            <strong>Web-Context</strong>
-            <span>Thinking, mapped</span>
+            <strong>Lineage App</strong>
+            <span>Knowledge you own</span>
           </div>
           <button
             className="sidebar-collapse"
@@ -923,8 +923,15 @@ function App() {
               </div>
             </div>
             <div className="settings-row">
-              <div><strong>Local vault</strong><span>All conversation data remains on this Mac.</span></div>
+              <div><strong>Default local vault</strong><span>Conversation data remains on the host machine.</span></div>
               <code>~/web-context-graph-data</code>
+            </div>
+            <div className="settings-row settings-contact">
+              <div><strong>Open source</strong><span>Copyright 2026 Jorge Ortiz Flores. AGPL-3.0-or-later.</span></div>
+              <div>
+                <a href="https://github.com/ortizjorge639/web-context-graph" target="_blank" rel="noreferrer">Source</a>
+                <a href="https://github.com/ortizjorge639/web-context-graph/blob/main/LICENSE" target="_blank" rel="noreferrer">License</a>
+              </div>
             </div>
             <div className="settings-row settings-contact">
               <div><strong>Contact</strong><span>Questions, feedback, or collaboration.</span></div>

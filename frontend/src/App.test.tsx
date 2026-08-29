@@ -46,6 +46,7 @@ test("skipping onboarding persists completion", async () => {
   fireEvent.click(screen.getByText("Skip tutorial"));
 
   expect(await screen.findByText("Graph")).toBeInTheDocument();
+  expect(screen.getByText("Lineage App")).toBeInTheDocument();
   expect(window.localStorage.getItem("wcg_onboarding_seen")).toBe("1");
 });
 

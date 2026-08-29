@@ -13,6 +13,7 @@ def test_rebuild_index_lists_all_active_threads():
         )
         rebuild_index(Path(tmp))
         index_text = (Path(tmp) / "index.md").read_text()
+        assert index_text.startswith("# Lineage App Knowledge Tree")
         assert f"[Root Thread](threads/{a.id}/thread.md)" in index_text
         assert "  - [Child Thread]" in index_text
         assert f"forked at `{a.id}#c0`" in index_text

@@ -1,102 +1,199 @@
-# Web-Context Graph
+# Lineage App
 
-Spider-style branching conversation graph, powered by GitHub Copilot CLI as the reasoning engine. Reply to any chunk of an agent's response and it forks a new thread from that exact point; backtrack freely; the whole traversal persists as a folder-of-markdown graph you own, with an auto-updating index and a visual Graph View.
+[![CI](https://github.com/ortizjorge639/web-context-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/ortizjorge639/web-context-graph/actions/workflows/ci.yml)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
 
-**Public product landing:** [https://ortizjorge639.github.io/web-context-graph/](https://ortizjorge639.github.io/web-context-graph/)
+**Branch agent conversations into knowledge you own.**
 
-See `docs/plans/2026-08-27-web-context-graph-mvp.md` for the implementation plan, and the spec it implements (Jorge's Obsidian vault, `Projects/Web-Context-Graph/Web-Context-Graph-Spec.md`).
+Lineage App is a trusted, single-user, local-first agent conversation workspace. FastAPI serves the React interface on localhost, each GitHub Copilot CLI response becomes addressable Markdown blocks, and a branch can begin from any whole block while preserving its root-to-fork lineage and excluding sibling branches.
+
+The interface is a view over a durable Knowledge Tree you own: `thread.md` stores conversation content, `meta.yaml` stores authoritative relationships, `index.md` is a regenerable discovery cache, and `AGENTS.md` explains the vault contract to other agent harnesses. Every mutation is committed to the vault's local Git history.
+
+**Product landing:** [https://ortizjorge639.github.io/web-context-graph/](https://ortizjorge639.github.io/web-context-graph/)
+
+> Lineage App is the product name. `web-context-graph` remains the repository slug and legacy technical name.
+
+## Quickstart
+
+Lineage App currently supports macOS and Linux-style environments through its Bash launcher. The UI runs in a modern browser; the host machine runs the backend and Copilot CLI.
+
+### Prerequisites
+
+- Git
+- Python 3.11+
+- Node.js 22+
+- GitHub Copilot CLI with active Copilot access
+- A modern browser
+
+Clone the repository and authenticate the CLI once:
+
+```bash
+git clone https://github.com/ortizjorge639/web-context-graph.git
+cd web-context-graph
+copilot login
+```
+
+Optionally choose a different vault directory, then start:
+
+```bash
+export WCG_VAULT_ROOT="$HOME/my-branchweave-vault"
+./scripts/run-local.sh
+```
+
+Without `WCG_VAULT_ROOT`, data lives in `~/web-context-graph-data/`. The launcher checks for `python3`, `npm`, `git`, `copilot`, and `curl`; creates the backend virtual environment if needed; installs project dependencies; builds the frontend; binds FastAPI to `127.0.0.1`; and opens the browser. It does not clone the repository, install system tools, provide Copilot access, or authenticate your account.
+
+The repository does not provide a supported native-Windows launcher today. GitHub Copilot CLI supports Windows, but `scripts/run-local.sh` targets macOS/Linux-style environments.
+
+## How it works
+
+1. **Branch a block.** Each agent response is split into addressable Markdown blocks. Choose a whole block to begin the next request from that exact point.
+2. **Preserve lineage.** The child thread receives root-to-fork context and continues independently; sibling branch content is excluded.
+3. **Navigate the tree.** Map/Knowledge Tree views let you trace branches, return to a node, branch again, and open conversations.
+4. **Own the artifact.** Plain Markdown and YAML remain useful outside the interface, while local Git records every mutation.
+
+Arbitrary highlighted-text or span branching is not implemented. Branching is block-level today.
 
 ## Screenshots
 
-Live captures from the running Phase 1 MVP (real backend data, real Copilot CLI responses):
+Live captures from the running app with real backend data and Copilot CLI responses:
 
-**Onboarding carousel** — Raycast-style, one mechanic per screen, skippable:
+**Onboarding** - one mechanic per screen, skippable:
 
 ![Onboarding](docs/screenshots/01-onboarding.png)
 
-**Graph View** — real threads and a real fork edge, rendered via react-flow. Clicking a node opens that thread:
+**Map** - real threads and a real fork edge. Selecting a node opens its conversation:
 
-![Graph View](docs/screenshots/02-graph-view.png)
+![Map view](docs/screenshots/02-graph-view.png)
 
-**Thread View** — chunked agent output (block-level), opened by clicking the corresponding node in Graph View:
+**Thread** - block-level agent output ready to branch:
 
-![Thread View](docs/screenshots/03-thread-view.png)
+![Thread view](docs/screenshots/03-thread-view.png)
 
-## Prerequisites
+## Data, Git, and agent access
 
-- Python 3.11+
-- Node 18+
-- GitHub Copilot CLI installed and authenticated (`copilot --version` should work)
+The vault defaults to `~/web-context-graph-data/` and can be changed with `WCG_VAULT_ROOT` when launching. It is separate from this source repository.
 
-## Run
+- `threads/<thread-id>/thread.md` contains Markdown role messages.
+- `threads/<thread-id>/meta.yaml` is the structural source of truth.
+- `index.md` is regenerated by scanning metadata and is never authoritative.
+- `AGENTS.md` teaches external agent harnesses to discover threads, reconstruct root-to-current lineage, stop at recorded fork blocks, and exclude siblings.
+- `graph-layout.json`, when present, stores presentation state only.
+
+Existing `AGENTS.md` files are intentionally never overwritten. New vaults receive a guide that users can extend.
+
+Lineage App initializes and commits to a local Git repository automatically. It does **not** configure or push to a GitHub remote. You may add and push your own remote manually; use a private repository when conversations may contain sensitive information.
+
+## Provider and security boundaries
+
+Lineage App invokes the installed and authenticated GitHub Copilot CLI directly as a subprocess with `--no-remote`. It does not use the Copilot SDK, has no arbitrary-provider adapter, and supports GitHub Copilot CLI only today. Available models come from your Copilot CLI account.
+
+Do not expose the backend publicly. This is a trusted localhost app, and the current Copilot invocation has broad local tool access. A hosted multi-user service would require authentication, isolated workers, restricted tools, encrypted credentials, quotas, audit logging, and remote storage that do not exist here.
+
+Copilot usage, subscriptions, model availability, and billing remain governed by GitHub.
+
+## Manual development
+
+Run the backend:
 
 ```bash
-# Backend
 cd backend
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/uvicorn main:app --reload
+```
 
-# Frontend (separate terminal)
+Run the frontend in a separate terminal:
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-## Deploy locally
-
-The supported MVP deployment is a single-user localhost application. It uses
-the Copilot CLI account already authenticated on the machine, keeps the vault
-under `~/web-context-graph-data/`, builds the frontend, and serves the complete
-application from FastAPI:
-
-```bash
-./scripts/run-local.sh
-```
-
-The launcher installs missing project dependencies, builds the production
-frontend, binds only to `127.0.0.1:8000`, and opens the app. Set `PORT` to use a
-different local port, or `WCG_VAULT_ROOT` to use another vault directory.
-
-Before launching, authenticate once with:
-
-```bash
-copilot login
-```
-
-Copilot calls are attributed to the GitHub account represented by the local CLI
-credential. Headless credentials can instead be supplied through
-`COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, or `GITHUB_TOKEN`. Current monthly plans use
-token-based GitHub AI Credits; annual plans may remain on premium-request
-accounting until renewal. The app's displayed token metrics are informational;
-GitHub Billing is authoritative.
-
-This release is intentionally local and single-user. Do not expose the backend
-to the public internet: the agent currently runs with broad local tool access.
-A hosted multi-user service requires isolated workers, per-user authentication
-and encrypted credentials, restricted tools, quotas, audit logging, and remote
-storage.
-
 ## Test
 
 ```bash
-# Backend fast tests (no real Copilot CLI calls)
-cd backend && .venv/bin/pytest -v --ignore=test_smoke_e2e.py --ignore=test_copilot_engine.py
-
-# Backend full suite (slower -- hits real Copilot CLI)
-cd backend && .venv/bin/pytest -v
+# Backend fast suite (no real Copilot CLI calls)
+cd backend
+.venv/bin/pytest -v --ignore=test_smoke_e2e.py --ignore=test_copilot_engine.py
 
 # Frontend
-cd frontend && npm test
+cd ../frontend
+npm test
+npm run lint
+npm run build
 ```
 
-## Data location
+The full backend suite runs real authenticated Copilot CLI integration tests:
 
-User graph data lives in `~/web-context-graph-data/` by default — not this repo. That folder is the user's actual content, auto-committed to its own local git repo after every mutation as a safety net for the app's absolute-delete-on-refork semantics.
+```bash
+cd backend
+.venv/bin/pytest -v
+```
 
-Every vault is initialized with an `AGENTS.md` navigation contract for external
-agents. It instructs them to use `index.md` for discovery, treat each thread's
-`meta.yaml` as structural authority, read `thread.md` for conversation content,
-reconstruct lineage root-to-current through recorded fork chunks, and exclude
-sibling branches. The generated guide also documents safe mutation and index
-regeneration rules. Existing `AGENTS.md` customizations are never overwritten.
+## FAQ
+
+### What exactly is Lineage App?
+
+A local-first browser workspace for branching GitHub Copilot CLI conversations at addressable response blocks and preserving the resulting lineage as a plain-file Knowledge Tree.
+
+### Is it a desktop app or hosted service? What devices and platforms work today?
+
+Neither. FastAPI serves a React web UI on localhost, and the host machine runs the backend and agent. The Bash launcher supports macOS and Linux-style environments. There is no supported native-Windows launcher and no hosted multi-user service.
+
+### Which agents, models, and providers are supported?
+
+GitHub Copilot CLI only. Lineage App invokes the installed CLI directly; it is not provider-neutral. Model availability follows the user's Copilot account and CLI.
+
+### What do I need before starting?
+
+Git, Python 3.11+, Node.js 22+, GitHub Copilot CLI with active access and authentication, and a modern browser on a macOS or Linux-style environment.
+
+### Does the one-command launcher install everything?
+
+No. After prerequisites, clone/download, and Copilot authentication are ready, `./scripts/run-local.sh` handles project dependencies, the production frontend build, localhost startup, and opening the browser.
+
+### Where is my data, and how do I choose the directory?
+
+The default is `~/web-context-graph-data/`. Set `WCG_VAULT_ROOT` before launching to use another directory.
+
+### Does it sync to GitHub?
+
+Not automatically. Each mutation is committed to local Git. You may configure and push a remote yourself; a private remote is recommended for sensitive conversations.
+
+### Why not use NotebookLM or an LLM wiki?
+
+Those tools often help synthesize documents and answers into a destination. Lineage App instead preserves the exploratory conversation lineage: alternatives, exact fork provenance, and a traversable plain-file graph. The approaches can complement each other.
+
+### Can another agent harness consume the vault?
+
+Yes. `AGENTS.md` documents discovery through `index.md`, authoritative relationships in `meta.yaml`, conversation content in `thread.md`, and the rule for reconstructing lineage without sibling leakage.
+
+### Is it safe to expose publicly?
+
+No. Keep it on trusted localhost. Copilot currently runs with broad local tool access.
+
+### Is highlighted-text branching supported?
+
+No. Responses are addressable at the Markdown block level. Arbitrary highlighted spans are future work.
+
+### Is it free and open source?
+
+The source is licensed under [GNU AGPL-3.0-or-later](LICENSE). Copilot access, usage, subscription, and billing are governed separately by GitHub.
+
+## Architecture and invariants
+
+- `/edit` changes one thread in place and never cascades.
+- `/refork` recursively deletes the selected child branch before creating its replacement.
+- Creating a fork updates both child `forked_from` and parent `forked_children`.
+- Rendering computes deterministic positional chunk IDs (`<thread-id>#c<order>`) from `thread.md` without rewriting stored Markdown.
+- Backend mutations rebuild `index.md` and autocommit the external vault.
+- Copilot session IDs are one-to-one with threads, and assembled context is root-to-current with siblings excluded.
+
+See [`docs/plans/2026-08-27-web-context-graph-mvp.md`](docs/plans/2026-08-27-web-context-graph-mvp.md) for the legacy Web-Context Graph implementation decisions.
+
+## License
+
+Copyright (C) 2026 Jorge Ortiz Flores.
+
+Lineage App is free software licensed under the [GNU Affero General Public License v3.0 or later](LICENSE). Modified versions offered over a network must make their corresponding source available under the license.

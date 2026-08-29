@@ -9,7 +9,7 @@ from storage import ThreadStore
 TUTORIAL_VERSION = 1
 TUTORIAL_THREADS = [
     (
-        "Welcome to Web-Context Graph",
+        "Welcome to Lineage App",
         "Think in branches. Explore every direction without losing the path that brought you here.",
     ),
     (

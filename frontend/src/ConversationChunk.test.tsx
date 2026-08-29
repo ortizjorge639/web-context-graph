@@ -14,7 +14,7 @@ test("renders assistant GitHub-flavored Markdown", () => {
   expect(screen.getByText("bold").tagName).toBe("STRONG");
   expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute("target", "_blank");
   expect(screen.getByRole("table")).toBeInTheDocument();
-  expect(screen.queryByText("Web-Context")).not.toBeInTheDocument();
+  expect(screen.queryByText("Lineage App")).not.toBeInTheDocument();
 });
 
 test("keeps user Markdown syntax as plain text", () => {

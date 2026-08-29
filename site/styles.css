@@ -868,6 +868,161 @@ h1 {
   display: none;
 }
 
+.quickstart,
+.faq {
+  padding: 128px max(24px, calc((100vw - 1180px) / 2));
+}
+
+.quickstart {
+  background: var(--canvas);
+}
+
+.faq {
+  background: var(--surface);
+}
+
+.section-heading {
+  max-width: 760px;
+}
+
+.section-heading h2 {
+  font-size: clamp(3rem, 5.8vw, 6rem);
+}
+
+.section-heading > p:last-child {
+  max-width: 620px;
+  margin: 22px 0 0;
+  color: var(--secondary);
+  font-size: 1.05rem;
+}
+
+.quickstart-grid {
+  display: grid;
+  margin-top: 54px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.quickstart-card {
+  min-width: 0;
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.quickstart-number {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+}
+
+.quickstart-card h3 {
+  margin-top: 24px;
+  font-size: 1.55rem;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.quickstart-card p,
+.quickstart-card small {
+  display: block;
+  margin: 18px 0 0;
+  color: var(--secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.quickstart-card small {
+  font-size: 0.74rem;
+}
+
+.quickstart-card code,
+.quickstart-note code,
+.faq code {
+  overflow-wrap: anywhere;
+  color: #3f5d14;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82em;
+}
+
+.quickstart-card > code {
+  display: block;
+  margin-top: 24px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--subtle);
+}
+
+.quickstart-note {
+  display: flex;
+  margin-top: 22px;
+  padding: 22px 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+}
+
+.quickstart-note p {
+  margin: 0;
+  color: var(--secondary);
+  font-size: 0.86rem;
+}
+
+.quickstart-note .button {
+  flex: 0 0 auto;
+}
+
+.faq-list {
+  max-width: 900px;
+  margin-top: 54px;
+  border-top: 1px solid var(--border);
+}
+
+.faq details {
+  border-bottom: 1px solid var(--border);
+}
+
+.faq summary {
+  position: relative;
+  padding: 25px 48px 25px 0;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 680;
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  position: absolute;
+  top: 23px;
+  right: 4px;
+  color: var(--accent);
+  content: "+";
+  font-size: 1.4rem;
+  font-weight: 450;
+  transition: transform 180ms ease;
+}
+
+.faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.faq details p {
+  max-width: 760px;
+  margin: -4px 0 26px;
+  color: var(--secondary);
+  line-height: 1.7;
+}
+
 .invitation {
   position: relative;
   display: grid;
@@ -1134,6 +1289,24 @@ footer nav {
     background: var(--dark-surface);
   }
 
+  .quickstart,
+  .faq {
+    padding: 92px 18px;
+  }
+
+  .quickstart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quickstart-note {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .quickstart-note .button {
+    align-self: flex-start;
+  }
+
   footer {
     padding: 34px 18px;
     grid-template-columns: 1fr 1fr;
@@ -1172,7 +1345,8 @@ footer nav {
   }
 
   .story-copy h2,
-  .story-copy h3 {
+  .story-copy h3,
+  .section-heading h2 {
     font-size: clamp(2.6rem, 13.5vw, 4rem);
   }
 
@@ -1188,6 +1362,10 @@ footer nav {
   .invitation code {
     max-width: 100%;
     overflow-x: auto;
+  }
+
+  .quickstart-note .button {
+    width: 100%;
   }
 
   footer {
