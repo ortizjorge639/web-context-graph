@@ -22,6 +22,11 @@ def test_tutorial_is_idempotent_and_creates_linear_graph():
         assert first["modified"] is False
         assert first["thread_ids"] == second["thread_ids"]
         assert len(first["thread_ids"]) == 5
+        root_content = client.get(
+            "/file-content",
+            params={"path": f"threads/{first['root_thread_id']}/thread.md"},
+        ).json()["content"]
+        assert root_content.startswith("# Welcome to Lineage App")
 
         graph = client.get("/graph").json()
         tutorial_edges = [

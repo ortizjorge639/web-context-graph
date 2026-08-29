@@ -181,7 +181,7 @@ export function Onboarding({
       <header className="onboarding-header">
         <div className="product-lockup">
           <span className="product-mark"><ProductMark /></span>
-          <span>Web-Context</span>
+          <span>Lineage App</span>
         </div>
         <button className="skip-button" onClick={() => void complete(true)} disabled={isCompleting}>
           Skip tutorial

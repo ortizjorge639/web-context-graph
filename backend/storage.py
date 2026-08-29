@@ -19,7 +19,7 @@ import yaml
 
 AGENT_GUIDE = """# Agent Guide
 
-This directory is a Web-Context Graph conversation vault. It is user-owned,
+This directory is a Lineage App conversation vault. It is user-owned,
 plain-file data. Read it without modifying files unless the user explicitly
 asks you to change the vault.
 
@@ -54,7 +54,7 @@ Chunk IDs are deterministic positional addresses in the form
 
 ## Mutation safety
 
-Prefer the Web-Context Graph API for writes. It updates both sides of
+Prefer the Lineage App API for writes. It updates both sides of
 relationships, regenerates `index.md`, and commits the vault to local git.
 Do not rename thread directories, rewrite IDs, edit Copilot session fields, or
 move branches by changing only one metadata file. If direct repair is

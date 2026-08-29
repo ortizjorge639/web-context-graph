@@ -12,7 +12,7 @@ def ensure_git_repo(vault_root: Path) -> None:
     if not (vault_root / ".git").exists():
         subprocess.run(["git", "init"], cwd=vault_root, capture_output=True, check=True)
         subprocess.run(["git", "config", "user.email", "wcg@localhost"], cwd=vault_root, capture_output=True)
-        subprocess.run(["git", "config", "user.name", "Web Context Graph"], cwd=vault_root, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Lineage App"], cwd=vault_root, capture_output=True)
 
 
 def autocommit(vault_root: Path, message: str, *, check: bool = False) -> None:

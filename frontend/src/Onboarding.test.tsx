@@ -5,6 +5,7 @@ import { Onboarding } from "./Onboarding";
 test("travels through all tutorial cards and calls onComplete", async () => {
   const onComplete = vi.fn();
   render(<Onboarding onComplete={onComplete} finaleDuration={0} handoffDuration={0} />);
+  expect(screen.getByText("Lineage App")).toBeInTheDocument();
   expect(screen.getByText("Think in branches.")).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Branch from this chunk" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByText("Show me how"));
