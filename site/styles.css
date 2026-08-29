@@ -236,13 +236,6 @@ h1 {
   line-height: 1.55;
 }
 
-.hero-turn {
-  margin: 18px 0 0;
-  font-size: 0.92rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-}
-
 .actions {
   display: flex;
   margin-top: 32px;
