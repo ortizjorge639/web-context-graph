@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Web-Context Graph maps branching AI conversations so every direction stays clear, connected, and locally owned.">
+    <meta name="description" content="Web-Context Graph turns branching AI conversations into a connected map of Markdown you own.">
     <meta name="theme-color" content="#f8f7f9">
-    <meta property="og:title" content="Web-Context Graph — Think in branches">
-    <meta property="og:description" content="Explore every direction without losing the path that brought you there.">
+    <meta property="og:title" content="Web-Context Graph - Follow every thought">
+    <meta property="og:description" content="Pull the interesting thread without losing the path that brought you there.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ortizjorge639.github.io/web-context-graph/">
     <meta property="og:image" content="https://ortizjorge639.github.io/web-context-graph/assets/tutorial-05-graph.webp">
     <meta name="twitter:card" content="summary_large_image">
-    <title>Web-Context Graph — Think in branches</title>
+    <title>Web-Context Graph - Follow every thought</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="script.js" defer></script>
@@ -32,176 +32,162 @@
         <span>Web-Context</span>
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#journey">How it works</a>
+        <a href="#journey">The journey</a>
         <a class="header-button" href="https://github.com/ortizjorge639/web-context-graph">View on GitHub</a>
       </nav>
     </header>
 
     <main id="main">
       <section class="hero" id="top" aria-labelledby="hero-title">
-        <div class="orb orb-coral" aria-hidden="true"></div>
-        <div class="orb orb-violet" aria-hidden="true"></div>
-        <div class="hero-copy reveal">
-          <p class="kicker">Your conversations, mapped</p>
-          <h1 id="hero-title">Think in branches.</h1>
-          <p>Explore every direction without losing the path that brought you there.</p>
+        <div class="hero-copy">
+          <p class="kicker">You are not a straight line</p>
+          <h1 id="hero-title">Follow the thought that pulls you.</h1>
+          <p>Most AI chats force every idea down one endless path. Web-Context Graph lets curiosity branch and keeps the way back.</p>
           <div class="actions">
-            <a class="button button-dark" href="https://github.com/ortizjorge639/web-context-graph">
-              Explore the project
+            <a class="button button-dark" href="#journey">
+              Start the journey
               <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m7.5 4.5 5.5 5.5-5.5 5.5"></path></svg>
             </a>
-            <a class="button button-quiet" href="#journey">See the journey</a>
+            <a class="button button-quiet" href="https://github.com/ortizjorge639/web-context-graph">Explore the project</a>
           </div>
         </div>
-        <figure class="hero-shot reveal">
-          <img
-            src="assets/tutorial-01-welcome.webp"
-            width="1440"
-            height="900"
-            alt="The real Web-Context onboarding welcome screen, introducing Think in branches"
-            fetchpriority="high"
-          >
+
+        <figure class="hero-evidence">
+          <svg class="hero-thread" viewBox="0 0 720 480" aria-hidden="true">
+            <path d="M28 244H150C204 244 204 118 284 118H390"></path>
+            <path d="M150 244C204 244 204 366 284 366H690"></path>
+            <circle cx="28" cy="244" r="7"></circle>
+            <circle cx="150" cy="244" r="9"></circle>
+            <circle cx="390" cy="118" r="7"></circle>
+            <circle cx="690" cy="366" r="7"></circle>
+          </svg>
+          <div class="hero-screen">
+            <img
+              src="assets/tutorial-01-welcome.webp"
+              width="1440"
+              height="900"
+              alt="Web-Context Graph welcome screen inviting the user to think in branches"
+              fetchpriority="high"
+            >
+          </div>
+          <figcaption>The real first screen. One invitation: think in branches.</figcaption>
         </figure>
+
         <a class="scroll-cue" href="#journey">
-          <span>Follow the path</span>
+          <span>Pull the first thread</span>
           <span aria-hidden="true">↓</span>
         </a>
       </section>
 
-      <section class="journey" id="journey" aria-labelledby="journey-title">
-        <div class="section-intro reveal">
-          <p class="kicker">The first minute</p>
-          <h2 id="journey-title">One idea at a time.</h2>
-          <p>The product tutorial is the product promise: split the answer, choose a direction, and keep the whole journey in view.</p>
-        </div>
+      <section class="story" id="journey" aria-labelledby="journey-title">
+        <div class="story-layout">
+          <div class="story-rail">
+            <article class="story-step is-current" data-step="0">
+              <div class="story-copy">
+                <span class="beat">01 / Curiosity</span>
+                <h2 id="journey-title">An answer sparks another question.</h2>
+                <p>The interesting direction is already there, inside one exact idea.</p>
+              </div>
+              <figure class="mobile-evidence">
+                <img src="assets/tutorial-02-chunking.webp" width="1440" height="900" loading="lazy" alt="A real Web-Context Graph response split into focused ideas that can each be explored">
+                <figcaption>Every idea has an address.</figcaption>
+              </figure>
+            </article>
 
-        <article class="chapter">
-          <div class="chapter-copy reveal">
-            <span class="step">01</span>
-            <p class="kicker">Chunking</p>
-            <h3>Every idea has an address.</h3>
-            <p>Responses become focused blocks you can copy, revisit, or branch from.</p>
-          </div>
-          <figure class="tutorial-frame reveal">
-            <img
-              src="assets/tutorial-02-chunking.webp"
-              width="1440"
-              height="900"
-              loading="lazy"
-              alt="The real tutorial chunking screen showing a response split into focused replyable ideas"
-            >
-            <figcaption>Each response becomes a set of replyable ideas.</figcaption>
-          </figure>
-        </article>
+            <article class="story-step" data-step="1">
+              <div class="story-copy">
+                <span class="beat">02 / The first thread</span>
+                <h3>Pull that thread.</h3>
+                <p>Branch from the node. Your original path stays exactly where you left it.</p>
+              </div>
+              <figure class="mobile-evidence">
+                <img src="assets/tutorial-03-forking.webp" width="1440" height="900" loading="lazy" alt="A real Web-Context Graph choice branching one thought into two directions">
+                <figcaption>Explore this. Keep going. Both remain.</figcaption>
+              </figure>
+            </article>
 
-        <article class="chapter chapter-reverse">
-          <div class="chapter-copy reveal">
-            <span class="step">02</span>
-            <p class="kicker">Forking</p>
-            <h3>Follow the interesting path.</h3>
-            <p>Choose any idea and explore a new direction without losing your place.</p>
-          </div>
-          <figure class="tutorial-frame reveal">
-            <img
-              src="assets/tutorial-03-forking.webp"
-              width="1440"
-              height="900"
-              loading="lazy"
-              alt="The real tutorial forking screen showing one thought opening into two possible directions"
-            >
-            <figcaption>A new direction, with the original path intact.</figcaption>
-          </figure>
-        </article>
+            <article class="story-step" data-step="2">
+              <div class="story-copy">
+                <span class="beat">03 / The web</span>
+                <h3>Every choice leaves a thread.</h3>
+                <p>Diverge. Return. Branch again. Connected context grows with you.</p>
+              </div>
+              <figure class="mobile-evidence">
+                <img src="assets/tutorial-04-backtracking.webp" width="1440" height="900" loading="lazy" alt="A real Web-Context Graph path returning to an earlier decision without losing later work">
+                <figcaption>Return without starting over.</figcaption>
+              </figure>
+            </article>
 
-        <article class="chapter">
-          <div class="chapter-copy reveal">
-            <span class="step">03</span>
-            <p class="kicker">Backtracking</p>
-            <h3>Return without starting over.</h3>
-            <p>Move through earlier decisions while every branch stays within reach.</p>
+            <article class="story-step" data-step="3">
+              <div class="story-copy">
+                <span class="beat">04 / The return</span>
+                <h3>Come back with a map.</h3>
+                <p>Revisit how your thinking changed: local Markdown and YAML you own, not another trapped transcript.</p>
+              </div>
+              <figure class="mobile-evidence">
+                <img src="assets/tutorial-05-graph.webp" width="1440" height="900" loading="lazy" alt="The real Web-Context Graph map showing connected conversation branches">
+                <figcaption>Your thinking, connected and navigable.</figcaption>
+              </figure>
+              <div class="mobile-local-note">
+                <span>Stored locally</span>
+                <strong>Readable files. Durable context. Your graph.</strong>
+              </div>
+            </article>
           </div>
-          <figure class="tutorial-frame reveal">
-            <img
-              src="assets/tutorial-04-backtracking.webp"
-              width="1440"
-              height="900"
-              loading="lazy"
-              alt="The real tutorial backtracking screen showing a path returning to an earlier decision"
-            >
-            <figcaption>Earlier context remains one click away.</figcaption>
-          </figure>
-        </article>
 
-        <article class="chapter chapter-reverse">
-          <div class="chapter-copy reveal">
-            <span class="step">04</span>
-            <p class="kicker">Graph view</p>
-            <h3>See the shape of your thinking.</h3>
-            <p>The entire journey becomes a navigable map and a folder of Markdown you own.</p>
-          </div>
-          <figure class="tutorial-frame reveal">
-            <img
-              src="assets/tutorial-05-graph.webp"
-              width="1440"
-              height="900"
-              loading="lazy"
-              alt="The real tutorial graph screen showing connected conversation branches as a navigable map"
-            >
-            <figcaption>A traceable web, stored as local Markdown.</figcaption>
-          </figure>
-        </article>
-      </section>
+          <aside class="story-stage" data-active="0" aria-label="The Web-Context Graph journey shown through real product screens">
+            <svg class="web-map" viewBox="0 0 900 600" aria-hidden="true">
+              <path class="web-line line-root" pathLength="1" d="M80 300H220"></path>
+              <path class="web-line line-one" pathLength="1" d="M220 300C285 300 290 130 410 130H560"></path>
+              <path class="web-line line-two" pathLength="1" d="M220 300C310 300 302 470 430 470H590"></path>
+              <path class="web-line line-three" pathLength="1" d="M560 130C650 130 650 245 770 245"></path>
+              <path class="web-line line-four" pathLength="1" d="M590 470C680 470 674 360 820 360"></path>
+              <circle class="web-node node-root" cx="80" cy="300" r="8"></circle>
+              <circle class="web-node node-one" cx="220" cy="300" r="11"></circle>
+              <circle class="web-node node-two" cx="560" cy="130" r="9"></circle>
+              <circle class="web-node node-three" cx="590" cy="470" r="9"></circle>
+              <circle class="web-node node-four" cx="770" cy="245" r="8"></circle>
+              <circle class="web-node node-five" cx="820" cy="360" r="8"></circle>
+              <g class="traveler">
+                <circle class="traveler-glow" r="21"></circle>
+                <circle class="traveler-core" r="7"></circle>
+                <circle class="traveler-orbit" cx="-12" cy="-9" r="3"></circle>
+                <circle class="traveler-orbit" cx="13" cy="-7" r="3"></circle>
+                <circle class="traveler-orbit" cx="2" cy="14" r="3"></circle>
+                <path d="M-7-5-11-8M7-4 11-6M1 7 2 11"></path>
+              </g>
+            </svg>
 
-      <section class="ownership" aria-labelledby="ownership-title">
-        <div class="ownership-copy reveal">
-          <p class="kicker kicker-dark">Stored locally</p>
-          <h2 id="ownership-title">A map you can open.</h2>
-          <p>Your conversations live as readable Markdown and YAML, backed by Git history—not trapped inside a black box.</p>
-          <ul aria-label="Local data benefits">
-            <li>Portable</li>
-            <li>Inspectable</li>
-            <li>Agent-readable</li>
-          </ul>
-        </div>
-        <div class="file-card reveal" role="img" aria-label="Web-Context Graph data folder with an index and thread folders containing Markdown and YAML">
-          <span class="file-label">Your graph on disk</span>
-          <div class="file-root"><b>⌄</b><strong>web-context-graph-data</strong></div>
-          <div class="file-row depth-one accent">M↓ <span>index.md</span></div>
-          <div class="file-row depth-one"><b>⌄</b><span>threads</span></div>
-          <div class="file-thread">
-            <b>⌄</b>
-            <strong>Product direction</strong>
-            <small>thread.md · meta.yaml</small>
-          </div>
-          <div class="file-thread">
-            <b>⌄</b>
-            <strong>Quieter approach</strong>
-            <small>thread.md · meta.yaml</small>
-          </div>
-          <div class="file-thread">
-            <b>⌄</b>
-            <strong>Final shape</strong>
-            <small>thread.md · meta.yaml</small>
-          </div>
+            <div class="screen-stack">
+              <figure class="screen is-active" data-screen="0">
+                <img src="assets/tutorial-02-chunking.webp" width="1440" height="900" alt="A real response split into focused ideas that can each be explored">
+                <figcaption>Every idea has an address.</figcaption>
+              </figure>
+              <figure class="screen" data-screen="1" aria-hidden="true">
+                <img src="assets/tutorial-03-forking.webp" width="1440" height="900" alt="A real choice branching one thought into two directions">
+                <figcaption>Explore this. Keep going. Both remain.</figcaption>
+              </figure>
+              <figure class="screen" data-screen="2" aria-hidden="true">
+                <img src="assets/tutorial-04-backtracking.webp" width="1440" height="900" alt="A real path returning to an earlier decision without losing later work">
+                <figcaption>Return without starting over.</figcaption>
+              </figure>
+              <figure class="screen" data-screen="3" aria-hidden="true">
+                <img src="assets/tutorial-05-graph.webp" width="1440" height="900" alt="The real graph map showing connected conversation branches">
+                <figcaption>Your thinking, connected and navigable.</figcaption>
+              </figure>
+            </div>
+
+            <div class="local-note">
+              <span>Stored locally</span>
+              <strong>Readable files. Durable context. Your graph.</strong>
+            </div>
+            <span class="stage-hint">Scroll to weave</span>
+          </aside>
         </div>
       </section>
 
-      <section class="status" aria-labelledby="status-title">
-        <div class="status-card reveal">
-          <div>
-            <p class="kicker">Working software</p>
-            <h2 id="status-title">Local by design.</h2>
-          </div>
-          <div class="status-copy">
-            <p>Run one command. Web-Context Graph uses your authenticated Copilot CLI and keeps the vault on your machine.</p>
-            <code>./scripts/run-local.sh</code>
-            <p class="status-note">The current release is an open-source, single-user MVP—not a hosted service.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="final-cta" aria-labelledby="cta-title">
-        <div class="final-mark reveal" aria-hidden="true">
+      <section class="invitation" aria-labelledby="invitation-title">
+        <div class="invitation-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32">
             <circle cx="8" cy="9" r="3"></circle>
             <circle cx="24" cy="8" r="3"></circle>
@@ -209,12 +195,14 @@
             <path d="M10.5 10.8 14.5 20M21.5 10 17.5 20M11 9h10"></path>
           </svg>
         </div>
-        <p class="kicker reveal">Your next direction</p>
-        <h2 id="cta-title" class="reveal">Think in branches.</h2>
-        <p class="reveal">Keep every path within reach.</p>
-        <div class="actions actions-centered reveal">
-          <a class="button button-dark" href="https://github.com/ortizjorge639/web-context-graph">View the GitHub repository</a>
-          <a class="button button-quiet" href="https://x.com/jojiguy639">Follow Jorge on X</a>
+        <p class="kicker kicker-dark">The next node is yours</p>
+        <h2 id="invitation-title">Weave your first thread.</h2>
+        <p>One command starts the local, open-source workspace.</p>
+        <code>./scripts/run-local.sh</code>
+        <div class="actions actions-centered">
+          <a class="button button-light" href="https://github.com/ortizjorge639/web-context-graph">Explore the project</a>
+          <a class="button button-outline" href="https://github.com/ortizjorge639/web-context-graph#readme">Read the README</a>
+          <a class="button button-outline" href="https://www.linkedin.com/in/jorgeortizflores/">Contact Jorge</a>
         </div>
       </section>
     </main>
