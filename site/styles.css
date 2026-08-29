@@ -46,6 +46,10 @@ svg {
   display: block;
 }
 
+picture {
+  display: block;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -751,6 +755,7 @@ footer nav {
   }
 
   .hero-evidence {
+    width: min(100%, 420px);
     padding-top: 30px;
   }
 
@@ -798,7 +803,7 @@ footer nav {
 
   .mobile-evidence {
     display: block;
-    width: min(100%, 680px);
+    width: min(100%, 420px);
     margin: 34px 0 0;
   }
 
