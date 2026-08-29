@@ -163,7 +163,9 @@ Not automatically. Each mutation is committed to local Git. You may configure an
 
 ### Why not use NotebookLM or an LLM wiki?
 
-Those tools often help synthesize documents and answers into a destination. Lineage App instead preserves the exploratory conversation lineage: alternatives, exact fork provenance, and a traversable plain-file graph. The approaches can complement each other.
+NotebookLM is excellent for source-grounded synthesis, while LLM wikis can compile documents into useful pages and links. Lineage App solves a different problem: keeping you in control while knowledge is explored.
+
+Every branch is a deliberate choice; its parent and fork point remain visible, sibling contexts stay isolated, and the complete tree remains inspectable as local Markdown, YAML, and Git history. It does not make AI infallible - it makes the path from question to answer auditable, revisable, and yours. The tools can complement one another.
 
 ### Can another agent harness consume the vault?
 
