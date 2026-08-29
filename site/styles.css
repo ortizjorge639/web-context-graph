@@ -225,15 +225,22 @@ h3 {
 
 h1 {
   max-width: 680px;
-  font-size: clamp(3.6rem, 6.8vw, 6.7rem);
+  font-size: clamp(3.6rem, 5.7vw, 5.8rem);
 }
 
-.hero-copy > p:last-of-type {
+.hero-summary {
   max-width: 490px;
   margin: 24px 0 0;
   color: var(--secondary);
   font-size: clamp(1rem, 1.5vw, 1.18rem);
   line-height: 1.55;
+}
+
+.hero-turn {
+  margin: 18px 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 .actions {
@@ -290,6 +297,7 @@ h1 {
   position: relative;
   z-index: 1;
   width: 100%;
+  min-height: 480px;
   min-width: 0;
   margin: 0;
   padding: 54px 0 40px;
@@ -297,10 +305,9 @@ h1 {
 
 .hero-thread {
   position: absolute;
-  z-index: -1;
-  inset: -12% -15%;
-  width: 130%;
-  height: 125%;
+  inset: 0 -8%;
+  width: 116%;
+  height: 100%;
   overflow: visible;
   fill: var(--accent);
   stroke: rgba(255, 107, 116, 0.52);
@@ -309,26 +316,74 @@ h1 {
 
 .hero-thread path {
   fill: none;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: weave-line 4.8s ease-in-out infinite;
 }
 
-.hero-screen {
-  overflow: hidden;
-  border: 1px solid rgba(17, 16, 18, 0.08);
-  border-radius: 26px;
-  background: var(--surface);
-  box-shadow: 0 28px 80px rgba(35, 31, 38, 0.13);
-  transform: translateY(calc(var(--story-progress) * -10px)) rotate(0.7deg);
+.hero-thread path:nth-of-type(2) {
+  animation-delay: 0.35s;
 }
 
-.hero-screen img {
-  width: 100%;
+.hero-thread path:nth-of-type(3) {
+  animation-delay: 0.7s;
+}
+
+.hero-thread path:nth-of-type(4) {
+  animation-delay: 1.05s;
+}
+
+.hero-thread path:nth-of-type(5) {
+  animation-delay: 1.4s;
+}
+
+.hero-thread circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse-node 2.4s ease-in-out infinite alternate;
+}
+
+.hero-thread circle:nth-of-type(even) {
+  animation-delay: 0.8s;
 }
 
 .hero-evidence figcaption {
-  margin: 16px 10px 0;
+  position: absolute;
+  right: 0;
+  bottom: 32px;
+  max-width: 260px;
+  margin: 0;
   color: var(--secondary);
   font-size: 0.68rem;
   text-align: right;
+}
+
+@keyframes weave-line {
+  0%,
+  12% {
+    stroke-dashoffset: 1;
+  }
+
+  48%,
+  88% {
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    stroke-dashoffset: -1;
+  }
+}
+
+@keyframes pulse-node {
+  from {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 }
 
 .scroll-cue {
@@ -757,15 +812,12 @@ footer nav {
 
   .hero-evidence {
     width: min(100%, 420px);
-    padding-top: 30px;
-  }
-
-  .hero-screen {
-    border-radius: 20px;
-    transform: none;
+    min-height: 300px;
+    padding: 16px 0 36px;
   }
 
   .hero-evidence figcaption {
+    bottom: 12px;
     text-align: left;
   }
 
@@ -853,7 +905,7 @@ footer nav {
     font-size: clamp(3.1rem, 16vw, 4.6rem);
   }
 
-  .hero-copy > p:last-of-type {
+  .hero-summary {
     font-size: 1rem;
   }
 
@@ -928,10 +980,6 @@ footer nav {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .hero-screen {
-    transform: none;
   }
 
   .story {
