@@ -18,7 +18,7 @@ def make_client(tmp_path):
     import main
     main.VAULT_ROOT = Path(tmp_path)
     main.store = main.ThreadStore(vault_root=main.VAULT_ROOT)
-    return TestClient(main.app)
+    return TestClient(main.app, base_url="http://localhost")
 
 def test_create_root_thread():
     with tempfile.TemporaryDirectory() as tmp:
@@ -47,6 +47,32 @@ def test_cors_rejects_untrusted_browser_origins():
         )
         assert allowed.status_code == 200
         assert allowed.headers["access-control-allow-origin"] == "http://localhost:5173"
+
+
+def test_trusted_host_accepts_supported_local_hosts_with_ports():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+
+        for host in ("localhost:8000", "127.0.0.1:8000"):
+            response = client.get("/healthz", headers={"Host": host})
+            assert response.status_code == 200
+            assert response.json()["ok"] is True
+
+
+def test_trusted_host_rejects_non_local_host_before_mutation():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+
+        rejected = client.post(
+            "/threads",
+            headers={"Host": "attacker.example"},
+            json={"title": "Must not be created"},
+        )
+
+        assert rejected.status_code == 400
+        assert rejected.text == "Invalid host header"
+        assert client.get("/threads").json() == []
+
 
 def test_list_threads_returns_most_recent_first():
     with tempfile.TemporaryDirectory() as tmp:
@@ -522,7 +548,7 @@ def test_production_frontend_serves_assets_and_spa_routes(tmp_path):
     original_dist = main.FRONTEND_DIST
     main.FRONTEND_DIST = frontend_dist
     try:
-        client = TestClient(main.app)
+        client = TestClient(main.app, base_url="http://localhost")
 
         assert client.get("/").text == "<main>Web Context Graph</main>"
         assert client.get("/workspace/deep-link").text == (

@@ -17,7 +17,7 @@ def make_client(tmp_path):
     import main
     main.VAULT_ROOT = Path(tmp_path)
     main.store = main.ThreadStore(vault_root=main.VAULT_ROOT)
-    return TestClient(main.app)
+    return TestClient(main.app, base_url="http://localhost")
 
 def test_in_place_edit_does_not_delete_forked_child():
     with tempfile.TemporaryDirectory() as tmp:
