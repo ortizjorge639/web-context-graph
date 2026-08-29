@@ -36,7 +36,7 @@ copilot login
 Optionally choose a different vault directory, then start:
 
 ```bash
-export WCG_VAULT_ROOT="$HOME/my-branchweave-vault"
+export WCG_VAULT_ROOT="$HOME/my-lineage-vault"
 ./scripts/run-local.sh
 ```
 
@@ -55,19 +55,27 @@ Arbitrary highlighted-text or span branching is not implemented. Branching is bl
 
 ## Screenshots
 
-Live captures from the running app with real backend data and Copilot CLI responses:
+Current captures from one coherent Lineage App journey:
 
-**Onboarding** - one mechanic per screen, skippable:
+**Linear thread** - begin with a normal Copilot conversation.
 
-![Onboarding](docs/screenshots/01-onboarding.png)
+![A linear conversation in Lineage App](site/assets/product-thread-linear-desktop.webp)
 
-**Map** - real threads and a real fork edge. Selecting a node opens its conversation:
+**Branch from a block** - anchor a new prompt to one addressable response block.
 
-![Map view](docs/screenshots/02-graph-view.png)
+![The branch composer anchored to a response block](site/assets/product-branch-from-chunk-desktop.webp)
 
-**Thread** - block-level agent output ready to branch:
+**Isolated child context** - carry root-to-fork context into the child without sibling content.
 
-![Thread view](docs/screenshots/03-thread-view.png)
+![A child conversation with ancestor context above the current branch](site/assets/product-child-context-desktop.webp)
+
+**Knowledge Tree** - trace branches, return to any node, and open its conversation.
+
+![The Knowledge Tree connecting the conversation branches](site/assets/product-knowledge-tree-desktop.webp)
+
+**Files and local vault** - inspect the durable Markdown, YAML, index, and folder hierarchy.
+
+![The Files view showing the local Lineage App vault](site/assets/product-vault-files-desktop.webp)
 
 ## Data, Git, and agent access
 
@@ -87,7 +95,7 @@ Lineage App initializes and commits to a local Git repository automatically. It 
 
 Lineage App invokes the installed and authenticated GitHub Copilot CLI directly as a subprocess with `--no-remote`. It does not use the Copilot SDK, has no arbitrary-provider adapter, and supports GitHub Copilot CLI only today. Available models come from your Copilot CLI account.
 
-Do not expose the backend publicly. This is a trusted localhost app, and the current Copilot invocation has broad local tool access. A hosted multi-user service would require authentication, isolated workers, restricted tools, encrypted credentials, quotas, audit logging, and remote storage that do not exist here.
+Do not expose the backend publicly. This is a trusted localhost app, and the current Copilot invocation has broad local tool access. The backend accepts only `localhost` and `127.0.0.1` Host headers (with any local port), rejecting non-local hosts before routing so a DNS-rebinding origin cannot become same-origin with the API. Browser JSON mutations are also limited to the documented local development origins by CORS, while no-Origin local CLI clients remain supported. A hosted multi-user service would require authentication, isolated workers, restricted tools, encrypted credentials, quotas, audit logging, and remote storage that do not exist here.
 
 Copilot usage, subscriptions, model availability, and billing remain governed by GitHub.
 

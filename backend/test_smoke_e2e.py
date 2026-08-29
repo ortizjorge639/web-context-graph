@@ -14,7 +14,7 @@ def test_full_loop_create_message_fork_edit_graph():
         import main
         main.VAULT_ROOT = Path(tmp)
         main.store = main.ThreadStore(vault_root=main.VAULT_ROOT)
-        client = TestClient(main.app)
+        client = TestClient(main.app, base_url="http://localhost")
 
         root = client.post("/threads", json={"title": "Smoke test root"}).json()
         msg_resp = client.post(
