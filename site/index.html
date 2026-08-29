@@ -53,20 +53,152 @@
         </div>
 
         <figure class="hero-evidence">
-          <svg class="hero-thread" viewBox="0 0 720 480" aria-hidden="true">
-            <path pathLength="1" d="M28 244H150"></path>
-            <path pathLength="1" d="M150 244C204 244 204 118 284 118H390"></path>
-            <path pathLength="1" d="M150 244C204 244 204 366 284 366H470"></path>
-            <path pathLength="1" d="M390 118C470 118 472 232 548 232H690"></path>
-            <path pathLength="1" d="M470 366C536 366 542 232 608 232"></path>
-            <circle cx="28" cy="244" r="7"></circle>
-            <circle cx="150" cy="244" r="9"></circle>
-            <circle cx="390" cy="118" r="7"></circle>
-            <circle cx="470" cy="366" r="7"></circle>
-            <circle cx="608" cy="232" r="9"></circle>
-            <circle cx="690" cy="232" r="7"></circle>
+          <svg class="hero-branch-diagram hero-branch-diagram-desktop" viewBox="0 0 760 520" aria-hidden="true">
+            <defs>
+              <filter id="hero-card-shadow" x="-30%" y="-30%" width="160%" height="180%">
+                <feDropShadow dx="0" dy="12" stdDeviation="13" flood-color="#231f26" flood-opacity=".09"></feDropShadow>
+              </filter>
+            </defs>
+
+            <g class="hero-edge edge-root-one" data-parent="root" data-anchor="root-block-1" data-child="child-a">
+              <path pathLength="1" d="M210 172C252 172 250 104 296 104"></path>
+              <path class="edge-arrow" d="m288 99 8 5-8 5"></path>
+            </g>
+            <g class="hero-edge edge-root-two" data-parent="root" data-anchor="root-block-2" data-child="child-b">
+              <path pathLength="1" d="M210 236C330 236 370 272 488 272"></path>
+              <path class="edge-arrow" d="m480 267 8 5-8 5"></path>
+            </g>
+            <g class="hero-edge edge-root-three" data-parent="root" data-anchor="root-block-2" data-child="child-c">
+              <path pathLength="1" d="M210 236C268 236 247 426 296 426"></path>
+              <path class="edge-arrow" d="m288 421 8 5-8 5"></path>
+            </g>
+            <g class="hero-edge edge-child-one" data-parent="child-a" data-anchor="child-a-block-2" data-child="grandchild-d">
+              <path pathLength="1" d="M466 174C495 174 501 114 532 114"></path>
+              <path class="edge-arrow" d="m524 109 8 5-8 5"></path>
+            </g>
+
+            <g class="thread-card thread-root" filter="url(#hero-card-shadow)">
+              <rect class="thread-shell" x="22" y="64" width="188" height="356" rx="22"></rect>
+              <circle class="thread-status" cx="47" cy="92" r="5"></circle>
+              <text class="thread-label" x="61" y="96">PARENT THREAD</text>
+              <text class="thread-title" x="42" y="124">Cooling one city block</text>
+              <rect class="message-block" x="42" y="146" width="148" height="51" rx="11"></rect>
+              <text class="message-text" x="54" y="168">Shade the library</text>
+              <text class="message-text" x="54" y="184">entrance first.</text>
+              <rect class="message-block" x="42" y="210" width="148" height="51" rx="11"></rect>
+              <text class="message-text" x="54" y="232">Test cool pavement.</text>
+              <text class="message-text" x="54" y="248">Measure the result.</text>
+              <rect class="message-block" x="42" y="274" width="148" height="51" rx="11"></rect>
+              <text class="message-text" x="54" y="296">Build a porch hub.</text>
+              <text class="message-text" x="54" y="312">Invite neighbors.</text>
+              <rect class="message-block message-muted" x="42" y="338" width="112" height="48" rx="11"></rect>
+              <text class="message-text" x="54" y="367">Next response...</text>
+              <rect class="anchor-outline anchor-root-one" x="38" y="142" width="156" height="59" rx="14"></rect>
+              <rect class="anchor-outline anchor-root-two" x="38" y="206" width="156" height="59" rx="14"></rect>
+              <circle class="anchor-dot anchor-root-one" cx="210" cy="172" r="6"></circle>
+              <circle class="anchor-dot anchor-root-two" cx="210" cy="236" r="6"></circle>
+            </g>
+
+            <g class="thread-card child-card child-one" filter="url(#hero-card-shadow)">
+              <rect class="thread-shell" x="296" y="36" width="170" height="174" rx="20"></rect>
+              <circle class="thread-status" cx="320" cy="62" r="4"></circle>
+              <text class="thread-label" x="332" y="66">CHILD THREAD A</text>
+              <text class="thread-title" x="316" y="91">Library shade</text>
+              <rect class="message-block" x="316" y="108" width="130" height="42" rx="10"></rect>
+              <text class="message-text" x="327" y="133">Map the entrance.</text>
+              <rect class="message-block" x="316" y="158" width="110" height="31" rx="10"></rect>
+              <text class="message-text" x="327" y="178">Pick materials.</text>
+              <rect class="anchor-outline anchor-child-one" x="312" y="154" width="118" height="39" rx="12"></rect>
+              <circle class="anchor-dot anchor-child-one" cx="466" cy="174" r="6"></circle>
+            </g>
+
+            <g class="thread-card child-card child-two" filter="url(#hero-card-shadow)">
+              <rect class="thread-shell" x="488" y="228" width="206" height="156" rx="20"></rect>
+              <circle class="thread-status" cx="512" cy="254" r="4"></circle>
+              <text class="thread-label" x="524" y="258">CHILD THREAD B</text>
+              <text class="thread-title" x="508" y="283">Pavement pilot</text>
+              <rect class="message-block" x="508" y="300" width="166" height="31" rx="10"></rect>
+              <text class="message-text" x="519" y="320">Compare two coatings.</text>
+              <rect class="message-block message-muted" x="508" y="339" width="126" height="25" rx="9"></rect>
+            </g>
+
+            <g class="thread-card child-card child-three" filter="url(#hero-card-shadow)">
+              <rect class="thread-shell" x="296" y="386" width="170" height="118" rx="20"></rect>
+              <circle class="thread-status" cx="320" cy="412" r="4"></circle>
+              <text class="thread-label" x="332" y="416">CHILD THREAD C</text>
+              <text class="thread-title" x="316" y="441">Heat survey</text>
+              <rect class="message-block" x="316" y="458" width="130" height="27" rx="9"></rect>
+            </g>
+
+            <g class="thread-card child-card grandchild" filter="url(#hero-card-shadow)">
+              <rect class="thread-shell" x="532" y="58" width="198" height="150" rx="20"></rect>
+              <circle class="thread-status descendant-status" cx="556" cy="84" r="4"></circle>
+              <text class="thread-label" x="568" y="88">GRANDCHILD</text>
+              <text class="thread-title" x="552" y="113">Shade materials</text>
+              <rect class="message-block" x="552" y="130" width="158" height="31" rx="10"></rect>
+              <text class="message-text" x="563" y="150">Compare canopy fabrics.</text>
+              <rect class="message-block message-muted" x="552" y="169" width="116" height="22" rx="8"></rect>
+            </g>
+
+            <g class="sequence-note note-one">
+              <rect x="236" y="136" width="88" height="24" rx="12"></rect>
+              <text x="280" y="152">branch here</text>
+            </g>
+            <g class="sequence-note note-two">
+              <rect x="242" y="257" width="114" height="24" rx="12"></rect>
+              <text x="299" y="273">branch here twice</text>
+            </g>
+            <g class="sequence-note note-three">
+              <rect x="475" y="145" width="88" height="24" rx="12"></rect>
+              <text x="519" y="161">branch again</text>
+            </g>
           </svg>
-          <figcaption>One conversation can hold every path without flattening the web.</figcaption>
+
+          <svg class="hero-branch-diagram hero-branch-diagram-mobile" viewBox="0 0 320 236" aria-hidden="true">
+            <g class="mobile-edge">
+              <path d="M102 77C118 77 116 42 132 42"></path>
+              <path d="M102 111C120 111 116 116 132 116"></path>
+              <path d="M102 111C120 111 116 190 132 190"></path>
+              <path d="M218 54C228 54 227 50 238 50"></path>
+            </g>
+            <g class="mobile-thread">
+              <rect class="thread-shell" x="6" y="24" width="96" height="188" rx="15"></rect>
+              <text class="thread-label" x="17" y="43">PARENT</text>
+              <rect class="message-block" x="16" y="58" width="76" height="38" rx="8"></rect>
+              <rect class="message-block" x="16" y="102" width="76" height="38" rx="8"></rect>
+              <rect class="message-block" x="16" y="146" width="76" height="24" rx="8"></rect>
+              <circle class="anchor-dot" cx="102" cy="77" r="4"></circle>
+              <circle class="anchor-dot" cx="102" cy="111" r="4"></circle>
+            </g>
+            <g class="mobile-thread">
+              <rect class="thread-shell" x="132" y="8" width="86" height="67" rx="14"></rect>
+              <text class="thread-label" x="143" y="27">CHILD A</text>
+              <rect class="message-block" x="142" y="36" width="66" height="22" rx="7"></rect>
+              <circle class="anchor-dot" cx="218" cy="54" r="4"></circle>
+            </g>
+            <g class="mobile-thread">
+              <rect class="thread-shell" x="132" y="84" width="86" height="67" rx="14"></rect>
+              <text class="thread-label" x="143" y="103">CHILD B</text>
+              <rect class="message-block" x="142" y="112" width="66" height="22" rx="7"></rect>
+            </g>
+            <g class="mobile-thread">
+              <rect class="thread-shell" x="132" y="160" width="86" height="67" rx="14"></rect>
+              <text class="thread-label" x="143" y="179">CHILD C</text>
+              <rect class="message-block" x="142" y="188" width="66" height="22" rx="7"></rect>
+            </g>
+            <g class="mobile-thread">
+              <rect class="thread-shell" x="238" y="17" width="76" height="67" rx="14"></rect>
+              <text class="thread-label" x="248" y="36">GRANDCHILD</text>
+              <rect class="message-block" x="248" y="45" width="56" height="22" rx="7"></rect>
+            </g>
+            <text class="mobile-diagram-note" x="238" y="110">Each child has</text>
+            <text class="mobile-diagram-note" x="238" y="124">one parent.</text>
+            <text class="mobile-diagram-note mobile-diagram-note-accent" x="238" y="151">Paths only</text>
+            <text class="mobile-diagram-note mobile-diagram-note-accent" x="238" y="165">move outward.</text>
+          </svg>
+
+          <figcaption>Select an exact block. Branch once, twice, or deeper—every child keeps one route back.</figcaption>
+          <p class="sr-only">A parent conversation has several content blocks. Its first block branches to child thread A. Its second block separately branches to child threads B and C. A block in child A branches again to a grandchild. Each child has exactly one parent, and no branches converge.</p>
         </figure>
 
         <a class="scroll-cue" href="#journey">
