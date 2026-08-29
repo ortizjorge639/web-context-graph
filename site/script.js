@@ -5,6 +5,7 @@ const stage = document.querySelector(".story-stage");
 const steps = [...document.querySelectorAll(".story-step")];
 const screens = [...document.querySelectorAll(".screen")];
 const traveler = document.querySelector(".traveler");
+const heroEvidence = document.querySelector(".hero-evidence");
 const animatedLayout = window.matchMedia(
   "(min-width: 821px) and (prefers-reduced-motion: no-preference)",
 );
@@ -78,7 +79,20 @@ function requestDraw() {
   window.requestAnimationFrame(drawStory);
 }
 
+function syncHeroAnimation() {
+  if (!heroEvidence) return;
+  heroEvidence.classList.toggle(
+    "is-animated",
+    animatedLayout.matches && !document.hidden,
+  );
+}
+
 window.addEventListener("scroll", requestDraw, { passive: true });
 window.addEventListener("resize", requestDraw);
-animatedLayout.addEventListener("change", requestDraw);
+animatedLayout.addEventListener("change", () => {
+  requestDraw();
+  syncHeroAnimation();
+});
+document.addEventListener("visibilitychange", syncHeroAnimation);
+syncHeroAnimation();
 requestDraw();

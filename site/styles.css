@@ -55,6 +55,17 @@ img {
   height: auto;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
@@ -290,92 +301,308 @@ h1 {
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: 480px;
+  aspect-ratio: 760 / 550;
   min-width: 0;
   margin: 0;
-  padding: 54px 0 40px;
+  padding: 14px 14px 48px;
+  overflow: hidden;
+  border: 1px solid rgba(17, 16, 18, 0.06);
+  border-radius: 32px;
+  background:
+    linear-gradient(rgba(17, 16, 18, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 16, 18, 0.025) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.54);
+  background-size: 32px 32px;
+  box-shadow: 0 28px 80px rgba(35, 31, 38, 0.08);
 }
 
-.hero-thread {
-  position: absolute;
-  inset: 0 -8%;
-  width: 116%;
+.hero-branch-diagram {
+  width: 100%;
   height: 100%;
   overflow: visible;
-  fill: var(--accent);
-  stroke: rgba(255, 107, 116, 0.52);
-  stroke-width: 1.4;
 }
 
-.hero-thread path {
+.hero-branch-diagram-mobile {
+  display: none;
+}
+
+.thread-shell {
+  fill: rgba(255, 255, 255, 0.96);
+  stroke: rgba(17, 16, 18, 0.09);
+  stroke-width: 1;
+}
+
+.thread-status,
+.anchor-dot {
+  fill: var(--accent);
+}
+
+.descendant-status {
+  fill: var(--willow);
+}
+
+.thread-label {
+  fill: var(--tertiary);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: 0.09em;
+}
+
+.thread-title {
+  fill: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.message-block {
+  fill: var(--subtle);
+  stroke: rgba(17, 16, 18, 0.045);
+}
+
+.message-muted {
+  opacity: 0.62;
+}
+
+.message-text {
+  fill: #5f5b61;
+  font-size: 10px;
+  font-weight: 570;
+}
+
+.anchor-outline {
+  fill: rgba(255, 107, 116, 0.08);
+  stroke: var(--accent);
+  stroke-dasharray: 3 3;
+  stroke-width: 1.3;
+}
+
+.hero-edge {
+  fill: none;
+  stroke: rgba(255, 107, 116, 0.74);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.hero-edge > path:first-child {
   fill: none;
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: weave-line 4.8s ease-in-out infinite;
 }
 
-.hero-thread path:nth-of-type(2) {
-  animation-delay: 0.35s;
+.edge-arrow {
+  fill: none;
 }
 
-.hero-thread path:nth-of-type(3) {
-  animation-delay: 0.7s;
+.sequence-note rect {
+  fill: var(--text);
 }
 
-.hero-thread path:nth-of-type(4) {
-  animation-delay: 1.05s;
+.sequence-note text {
+  fill: #fff;
+  font-size: 8px;
+  font-weight: 720;
+  letter-spacing: 0.03em;
+  text-anchor: middle;
+  text-transform: uppercase;
 }
 
-.hero-thread path:nth-of-type(5) {
-  animation-delay: 1.4s;
+.hero-evidence.is-animated .edge-root-one > path:first-child {
+  animation: draw-first-branch 12s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-.hero-thread circle {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pulse-node 2.4s ease-in-out infinite alternate;
+.hero-evidence.is-animated .edge-root-two > path:first-child {
+  animation: draw-second-branch 12s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-.hero-thread circle:nth-of-type(even) {
-  animation-delay: 0.8s;
+.hero-evidence.is-animated .edge-root-three > path:first-child {
+  animation: draw-third-branch 12s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.hero-evidence.is-animated .edge-child-one > path:first-child {
+  animation: draw-deep-branch 12s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.hero-evidence.is-animated .edge-root-one .edge-arrow,
+.hero-evidence.is-animated .child-one {
+  animation: reveal-first-child 12s ease infinite;
+}
+
+.hero-evidence.is-animated .edge-root-two .edge-arrow,
+.hero-evidence.is-animated .child-two {
+  animation: reveal-second-child 12s ease infinite;
+}
+
+.hero-evidence.is-animated .edge-root-three .edge-arrow,
+.hero-evidence.is-animated .child-three {
+  animation: reveal-third-child 12s ease infinite;
+}
+
+.hero-evidence.is-animated .edge-child-one .edge-arrow,
+.hero-evidence.is-animated .grandchild {
+  animation: reveal-grandchild 12s ease infinite;
+}
+
+.hero-evidence.is-animated .anchor-root-one,
+.hero-evidence.is-animated .note-one {
+  animation: select-first-anchor 12s ease infinite;
+}
+
+.hero-evidence.is-animated .anchor-root-two,
+.hero-evidence.is-animated .note-two {
+  animation: select-second-anchor 12s ease infinite;
+}
+
+.hero-evidence.is-animated .anchor-child-one,
+.hero-evidence.is-animated .note-three {
+  animation: select-child-anchor 12s ease infinite;
 }
 
 .hero-evidence figcaption {
   position: absolute;
-  right: 0;
-  bottom: 32px;
-  max-width: 260px;
+  right: 22px;
+  bottom: 17px;
+  left: 22px;
   margin: 0;
   color: var(--secondary);
-  font-size: 0.68rem;
-  text-align: right;
+  font-size: 0.7rem;
+  text-align: center;
 }
 
-@keyframes weave-line {
+@keyframes draw-first-branch {
   0%,
-  12% {
+  8% {
     stroke-dashoffset: 1;
   }
 
-  48%,
-  88% {
-    stroke-dashoffset: 0;
-  }
-
+  17%,
   100% {
-    stroke-dashoffset: -1;
+    stroke-dashoffset: 0;
   }
 }
 
-@keyframes pulse-node {
-  from {
-    opacity: 0.45;
-    transform: scale(0.8);
+@keyframes draw-second-branch {
+  0%,
+  29% {
+    stroke-dashoffset: 1;
   }
 
-  to {
+  39%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-third-branch {
+  0%,
+  45% {
+    stroke-dashoffset: 1;
+  }
+
+  55%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-deep-branch {
+  0%,
+  67% {
+    stroke-dashoffset: 1;
+  }
+
+  77%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes reveal-first-child {
+  0%,
+  15% {
+    opacity: 0;
+  }
+
+  20%,
+  100% {
     opacity: 1;
-    transform: scale(1.15);
+  }
+}
+
+@keyframes reveal-second-child {
+  0%,
+  37% {
+    opacity: 0;
+  }
+
+  42%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes reveal-third-child {
+  0%,
+  53% {
+    opacity: 0;
+  }
+
+  58%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes reveal-grandchild {
+  0%,
+  75% {
+    opacity: 0;
+  }
+
+  80%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes select-first-anchor {
+  0%,
+  4%,
+  21%,
+  100% {
+    opacity: 0;
+  }
+
+  7%,
+  17% {
+    opacity: 1;
+  }
+}
+
+@keyframes select-second-anchor {
+  0%,
+  25%,
+  59%,
+  100% {
+    opacity: 0;
+  }
+
+  29%,
+  55% {
+    opacity: 1;
+  }
+}
+
+@keyframes select-child-anchor {
+  0%,
+  63%,
+  82%,
+  100% {
+    opacity: 0;
+  }
+
+  67%,
+  78% {
+    opacity: 1;
   }
 }
 
@@ -805,13 +1032,47 @@ footer nav {
 
   .hero-evidence {
     width: min(100%, 420px);
-    min-height: 300px;
-    padding: 16px 0 36px;
+    aspect-ratio: 320 / 276;
+    padding: 14px 10px 42px;
+    border-radius: 24px;
+    background-size: 24px 24px;
+  }
+
+  .hero-branch-diagram-desktop {
+    display: none;
+  }
+
+  .hero-branch-diagram-mobile {
+    display: block;
+  }
+
+  .mobile-edge {
+    fill: none;
+    stroke: rgba(255, 107, 116, 0.78);
+    stroke-linecap: round;
+    stroke-width: 1.4;
+  }
+
+  .mobile-thread .thread-label {
+    font-size: 7px;
+  }
+
+  .mobile-diagram-note {
+    fill: var(--secondary);
+    font-size: 9px;
+    font-weight: 650;
+  }
+
+  .mobile-diagram-note-accent {
+    fill: var(--accent);
   }
 
   .hero-evidence figcaption {
-    bottom: 12px;
-    text-align: left;
+    right: 14px;
+    bottom: 13px;
+    left: 14px;
+    font-size: 0.66rem;
+    text-align: center;
   }
 
   .story {
