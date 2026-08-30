@@ -77,6 +77,11 @@ Current captures from one coherent Lineage App journey:
 
 ![The Files view showing the local Lineage App vault](site/assets/product-vault-files-desktop.webp)
 
+## Promotional media
+
+Watch the [17-second Lineage App highlight reel](media/promo/lineage-app-highlight-reel.mp4)
+or inspect its [editable HyperFrames project](media/promo/lineage-app-highlight-reel/).
+
 ## Data, Git, and agent access
 
 The vault defaults to `~/web-context-graph-data/` and can be changed with `WCG_VAULT_ROOT` when launching. It is separate from this source repository.

@@ -1,0 +1,17 @@
+{
+  "name": "lineage-app-highlight-reel",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "gsap": "3.14.2",
+    "hyperframes": "0.8.10"
+  },
+  "scripts": {
+    "dev": "hyperframes preview",
+    "lint": "hyperframes lint --verbose",
+    "check": "hyperframes check --at-transitions",
+    "snapshot": "hyperframes snapshot --at 0.1,1.6,3.8,6.6,9.4,12,14.8,17.2 --no-end",
+    "render": "hyperframes render --fps 30 --quality high --crf 18 --strict --output ../lineage-app-highlight-reel.mp4",
+    "tag": "ffmpeg -y -i ../lineage-app-highlight-reel.mp4 -map 0 -c copy -metadata hyperframes_renderer=hyperframes -metadata hyperframes_version=0.8.10 -movflags +faststart+use_metadata_tags ../lineage-app-highlight-reel.tagged.mp4 && mv ../lineage-app-highlight-reel.tagged.mp4 ../lineage-app-highlight-reel.mp4"
+  }
+}

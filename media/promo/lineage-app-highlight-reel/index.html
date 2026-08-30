@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Lineage App highlight reel</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./node_modules/gsap/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="17.4"
+      data-width="1920"
+      data-height="1080"
+    >
+      <section
+        id="hook-scene"
+        class="scene scene-dark clip"
+        data-start="0" data-duration="3" data-track-index="1"
+        data-layout-allow-overlap
+        data-layout-allow-occlusion
+      >
+        <div class="orb orb-coral" data-layout-allow-overflow aria-hidden="true"></div>
+        <div class="orb orb-willow" data-layout-allow-overflow aria-hidden="true"></div>
+        <div class="scene-number scene-number-light">01 / BRANCH</div>
+        <div class="hook-copy">
+          <p class="eyebrow eyebrow-light">Agent conversations, mapped</p>
+          <h1 id="hook-title">
+            <span class="title-line">One answer.</span>
+            <span class="title-line title-line-accent">More than one direction.</span>
+          </h1>
+        </div>
+        <div class="hook-graph" aria-hidden="true">
+          <svg class="hook-edges" viewBox="0 0 780 670">
+            <path class="edge edge-main" pathLength="1" d="M116 335C230 335 226 165 352 165" />
+            <path class="edge edge-main" pathLength="1" d="M116 335C250 335 250 335 400 335" />
+            <path class="edge edge-main" pathLength="1" d="M116 335C230 335 226 505 352 505" />
+            <path class="edge edge-secondary" pathLength="1" d="M566 165C630 165 628 84 704 84" />
+          </svg>
+          <div class="thread-card thread-card-root">
+            <span class="card-label">ANSWER</span>
+            <strong>Cooling one city block</strong>
+            <i></i><i></i><i></i>
+          </div>
+          <div class="thread-card thread-card-a">
+            <span class="card-label">DIRECTION A</span>
+            <strong>Library shade</strong>
+          </div>
+          <div class="thread-card thread-card-b">
+            <span class="card-label">DIRECTION B</span>
+            <strong>Pavement pilot</strong>
+          </div>
+          <div class="thread-card thread-card-c">
+            <span class="card-label">DIRECTION C</span>
+            <strong>Cooling hub</strong>
+          </div>
+          <div class="thread-card thread-card-d">
+            <span class="card-label">BRANCH AGAIN</span>
+            <strong>Canopy materials</strong>
+          </div>
+          <div class="branch-node branch-node-root"></div>
+          <div class="branch-node branch-node-a"></div>
+          <div class="branch-node branch-node-b"></div>
+          <div class="branch-node branch-node-c"></div>
+        </div>
+      </section>
+
+      <section
+        id="branch-scene"
+        class="scene scene-light clip"
+        data-start="2.3" data-duration="3.5" data-track-index="2"
+        data-layout-allow-overlap
+        data-layout-allow-occlusion
+      >
+        <div class="scene-number">02 / ADDRESSABLE BLOCKS</div>
+        <div class="scene-copy scene-copy-left">
+          <p class="eyebrow">Choose a whole response block</p>
+          <h2>Branch from the block that matters.</h2>
+          <span class="micro-label">Exact block · exact fork point</span>
+        </div>
+        <div class="capture capture-branch" data-layout-allow-overflow>
+          <img src="./assets/product-branch-from-chunk-desktop.webp" data-layout-allow-overflow alt="" />
+          <div class="capture-glass"></div>
+          <div class="focus-ring" aria-hidden="true"></div>
+        </div>
+        <svg class="fork-overlay" viewBox="0 0 520 180" aria-hidden="true">
+          <path pathLength="1" d="M36 32C178 32 242 150 488 150" />
+          <circle cx="36" cy="32" r="8" />
+        </svg>
+        <div class="spawn-card">
+          <span class="card-label">NEW CHILD</span>
+          <strong>Library porch cooling hub</strong>
+          <small>Root context attached</small>
+        </div>
+      </section>
+
+      <section
+        id="context-scene"
+        class="scene scene-light clip"
+        data-start="5.2" data-duration="3.3" data-track-index="3"
+        data-layout-allow-overlap
+        data-layout-allow-occlusion
+      >
+        <div class="scene-number">03 / ISOLATED LINEAGE</div>
+        <div class="capture capture-context">
+          <img src="./assets/product-child-context-desktop.webp" data-layout-allow-overflow alt="" />
+          <div class="capture-vignette"></div>
+        </div>
+        <div class="context-panel">
+          <p class="eyebrow">Root → fork → current</p>
+          <h2>Carry the path.<br /><span>Leave siblings out.</span></h2>
+          <div class="lineage-rail" aria-hidden="true">
+            <div class="rail-node active">Root</div>
+            <div class="rail-line"></div>
+            <div class="rail-node active">Fork block</div>
+            <div class="rail-line"></div>
+            <div class="rail-node current">Current</div>
+          </div>
+          <div class="sibling-rail" aria-hidden="true">
+            <span>Sibling A</span>
+            <span>Sibling B</span>
+            <b>separate</b>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="tree-scene"
+        class="scene scene-light clip"
+        data-start="7.9" data-duration="3.4" data-track-index="4"
+        data-layout-allow-overlap
+        data-layout-allow-occlusion
+      >
+        <div class="scene-number">04 / KNOWLEDGE TREE</div>
+        <div class="capture capture-tree">
+          <img src="./assets/product-knowledge-tree-desktop.webp" data-layout-allow-overflow alt="" />
+          <div class="capture-vignette capture-vignette-tree"></div>
+          <svg class="tree-trace" viewBox="0 0 1600 900" aria-hidden="true">
+            <path pathLength="1" d="M914 681C900 610 735 600 645 506" />
+            <path pathLength="1" d="M914 681C980 620 970 565 968 506" />
+            <path pathLength="1" d="M914 681C1060 625 1183 600 1183 506" />
+          </svg>
+        </div>
+        <div class="tree-headline">
+          <p class="eyebrow eyebrow-light">Strict single-parent lineage</p>
+          <h2>See every branch.</h2>
+          <span>Paths move outward. They never converge.</span>
+        </div>
+        <div class="tree-pill">7 threads · 1 root</div>
+      </section>
+
+      <section
+        id="vault-scene"
+        class="scene scene-light clip"
+        data-start="10.7" data-duration="3.2" data-track-index="5"
+        data-layout-allow-overlap
+        data-layout-allow-occlusion
+      >
+        <div class="scene-number">05 / LOCAL OWNERSHIP</div>
+        <div class="capture capture-vault" data-layout-allow-overflow>
+          <img src="./assets/product-vault-files-desktop.webp" data-layout-allow-overflow alt="" />
+          <div class="capture-vignette capture-vignette-vault"></div>
+        </div>
+        <div class="vault-copy">
+          <p class="eyebrow">Markdown · YAML · local Git</p>
+          <h2>Keep the trail in files you own.</h2>
+        </div>
+        <div class="file-rail" aria-label="User-owned vault files">
+          <span class="file-chip file-chip-primary">thread.md</span>
+          <span class="file-chip">meta.yaml</span>
+          <span class="file-chip">index.md</span>
+          <span class="file-chip">AGENTS.md</span>
+          <span class="file-chip file-chip-git">local Git history</span>
+        </div>
+      </section>
+
+      <section
+        id="end-scene"
+        class="scene scene-dark clip"
+        data-start="13.2" data-duration="4.2" data-track-index="6"
+        data-layout-allow-overlap
+        data-layout-allow-occlusion
+      >
+        <div class="end-orbit end-orbit-one" data-layout-allow-overflow aria-hidden="true"></div>
+        <div class="end-orbit end-orbit-two" data-layout-allow-overflow aria-hidden="true"></div>
+        <svg class="end-tree" viewBox="0 0 1920 1080" aria-hidden="true">
+          <path pathLength="1" d="M960 540C708 540 712 326 446 326" />
+          <path pathLength="1" d="M960 540C1194 540 1196 328 1452 328" />
+          <path pathLength="1" d="M960 540C1174 540 1160 770 1452 770" />
+        </svg>
+        <div class="end-lockup">
+          <div class="product-mark">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="14" cy="17" r="6"></circle>
+              <circle cx="50" cy="15" r="6"></circle>
+              <circle cx="32" cy="48" r="6"></circle>
+              <path pathLength="1" d="M19 21 29 42M45 20 35 42M20 17h24"></path>
+            </svg>
+          </div>
+          <p class="end-eyebrow">Think in branches.</p>
+          <h2>Lineage App</h2>
+          <p class="tagline">Branch agent conversations into knowledge you own.</p>
+          <div class="boundary-label">Open source · Local-first · GitHub Copilot CLI beta</div>
+          <div class="end-url">ortizjorge639.github.io/web-context-graph/</div>
+        </div>
+      </section>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        const smooth = "power3.inOut";
+        const arrive = "power3.out";
+
+        gsap.set("#hook-title .title-line, .hook-copy .eyebrow", { opacity: 0, y: 68 });
+        gsap.set(".hook-edges path, .fork-overlay path, .tree-trace path, .end-tree path", {
+          strokeDasharray: 1,
+          strokeDashoffset: 1,
+        });
+        gsap.set(".thread-card, .branch-node", { opacity: 0, scale: 0.88 });
+        gsap.set("#branch-scene, #context-scene, #tree-scene, #vault-scene, #end-scene", {
+          clipPath: "inset(0 0 0 100%)",
+        });
+        gsap.set(".scene-copy-left > *, .spawn-card, .context-panel > *, .tree-headline > *, .vault-copy > *, .file-chip", {
+          opacity: 0,
+          y: 42,
+        });
+        gsap.set(".focus-ring", { opacity: 0, scale: 0.82 });
+        gsap.set(".rail-line", { scaleX: 0 });
+        gsap.set(".tree-pill", { opacity: 0, y: 20 });
+        gsap.set(".end-lockup > *", { opacity: 0, y: 34 });
+        gsap.set(".product-mark", { opacity: 0, scale: 0.78, rotation: -4 });
+        gsap.set(".product-mark path", { strokeDasharray: 1, strokeDashoffset: 1 });
+
+        tl.to(".hook-copy .eyebrow", { opacity: 1, y: 0, duration: 0.55, ease: arrive }, 0.08)
+          .to("#hook-title .title-line:first-child", { opacity: 1, y: 0, duration: 0.75, ease: arrive }, 0.18)
+          .to("#hook-title .title-line:last-child", { opacity: 1, y: 0, duration: 0.78, ease: arrive }, 0.31)
+          .to(".hook-edges .edge-main", { strokeDashoffset: 0, duration: 1.35, stagger: 0.11, ease: "power2.inOut" }, 0.25)
+          .to(".hook-edges .edge-secondary", { strokeDashoffset: 0, duration: 0.85, ease: "power2.inOut" }, 0.92)
+          .to(".thread-card-root", { opacity: 1, scale: 1, duration: 0.62, ease: "back.out(1.4)" }, 0.14)
+          .to(".thread-card-a", { opacity: 1, scale: 1, duration: 0.58, ease: "back.out(1.35)" }, 0.65)
+          .to(".thread-card-b", { opacity: 1, scale: 1, duration: 0.58, ease: "back.out(1.35)" }, 0.82)
+          .to(".thread-card-c", { opacity: 1, scale: 1, duration: 0.58, ease: "back.out(1.35)" }, 1.01)
+          .to(".thread-card-d", { opacity: 1, scale: 1, duration: 0.58, ease: "back.out(1.35)" }, 1.35)
+          .to(".branch-node", { opacity: 1, scale: 1, duration: 0.34, stagger: 0.1, ease: "back.out(2)" }, 0.52)
+          .to(".hook-graph", { x: -18, y: -7, duration: 2.9, ease: "none" }, 0)
+          .to(".orb-coral", { x: 80, y: 36, duration: 3.2, ease: "none" }, 0)
+          .to(".orb-willow", { x: -50, y: -28, duration: 3.2, ease: "none" }, 0);
+
+        tl.to("#branch-scene", { clipPath: "inset(0 0 0 0%)", duration: 0.62, ease: smooth }, 2.3)
+          .fromTo(".capture-branch", { x: 150, scale: 1.035 }, { x: 0, scale: 1, duration: 1.05, ease: arrive }, 2.34)
+          .to(".scene-copy-left > *", { opacity: 1, y: 0, duration: 0.65, stagger: 0.09, ease: arrive }, 2.52)
+          .to(".focus-ring", { opacity: 1, scale: 1, duration: 0.52, ease: "back.out(1.7)" }, 3.48)
+          .to(".focus-ring", { boxShadow: "0 0 0 14px rgba(255, 107, 116, 0.04), 0 18px 48px rgba(255, 107, 116, 0.24)", duration: 1.35, ease: "sine.inOut" }, 3.75)
+          .to(".fork-overlay path", { strokeDashoffset: 0, duration: 0.75, ease: "power2.inOut" }, 3.85)
+          .fromTo(".fork-overlay circle", { opacity: 0, scale: 0.4, transformOrigin: "center" }, { opacity: 1, scale: 1, duration: 0.38, ease: "back.out(2)" }, 3.82)
+          .to(".spawn-card", { opacity: 1, y: 0, duration: 0.62, ease: "back.out(1.35)" }, 4.3)
+          .to(".capture-branch img", { scale: 1.025, x: -8, duration: 3.2, ease: "none" }, 2.4);
+
+        tl.to("#context-scene", { clipPath: "inset(0 0 0 0%)", duration: 0.62, ease: smooth }, 5.2)
+          .fromTo(".capture-context", { x: -90, scale: 1.04 }, { x: 0, scale: 1, duration: 0.92, ease: arrive }, 5.22)
+          .to(".context-panel > *", { opacity: 1, y: 0, duration: 0.62, stagger: 0.08, ease: arrive }, 5.52)
+          .to(".rail-line", { scaleX: 1, duration: 0.48, stagger: 0.17, ease: "power2.inOut" }, 6.13)
+          .fromTo(".rail-node.current", { scale: 0.9 }, { scale: 1, duration: 0.44, ease: "back.out(1.8)" }, 6.45)
+          .to(".capture-context img", { x: 18, scale: 1.018, duration: 3.1, ease: "none" }, 5.26);
+
+        tl.to("#tree-scene", { clipPath: "inset(0 0 0 0%)", duration: 0.66, ease: smooth }, 7.9)
+          .fromTo(".capture-tree", { scale: 0.97 }, { scale: 1, duration: 0.95, ease: arrive }, 7.92)
+          .to(".tree-headline > *", { opacity: 1, y: 0, duration: 0.62, stagger: 0.08, ease: arrive }, 8.18)
+          .to(".tree-trace path", { strokeDashoffset: 0, duration: 1.08, stagger: 0.13, ease: "power2.inOut" }, 8.62)
+          .to(".tree-pill", { opacity: 1, y: 0, duration: 0.52, ease: arrive }, 9.17)
+          .to(".capture-tree img", { scale: 1.045, x: -12, y: -6, duration: 3.25, ease: "none" }, 7.95);
+
+        tl.to("#vault-scene", { clipPath: "inset(0 0 0 0%)", duration: 0.7, ease: smooth }, 10.7)
+          .fromTo(".capture-vault", { scale: 1.025, y: 40 }, { scale: 1, y: 0, duration: 1.05, ease: arrive }, 10.72)
+          .to(".vault-copy > *", { opacity: 1, y: 0, duration: 0.68, stagger: 0.11, ease: arrive }, 10.97)
+          .to(".file-chip", { opacity: 1, y: 0, duration: 0.58, stagger: 0.08, ease: "back.out(1.25)" }, 11.64)
+          .to(".capture-vault img", { scale: 1.015, x: -8, duration: 3.15, ease: "none" }, 10.74);
+
+        tl.to("#end-scene", { clipPath: "inset(0 0 0 0%)", duration: 0.72, ease: smooth }, 13.2)
+          .to(".end-tree path", { strokeDashoffset: 0, duration: 1.45, stagger: 0.12, ease: "power2.inOut" }, 13.28)
+          .to(".product-mark", { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.72, ease: "back.out(1.45)" }, 13.28)
+          .to(".product-mark path", { strokeDashoffset: 0, duration: 0.82, ease: "power2.inOut" }, 13.36)
+          .to(".end-eyebrow", { opacity: 1, y: 0, duration: 0.52, ease: arrive }, 13.42)
+          .to(".end-lockup h2", { opacity: 1, y: 0, duration: 0.72, ease: arrive }, 13.5)
+          .to(".tagline", { opacity: 1, y: 0, duration: 0.64, ease: arrive }, 13.66)
+          .to(".boundary-label", { opacity: 1, y: 0, duration: 0.58, ease: arrive }, 13.88)
+          .to(".end-url", { opacity: 1, y: 0, duration: 0.56, ease: arrive }, 14.08)
+          .to(".end-orbit-one", { scale: 1.04, rotation: 3, duration: 4.2, ease: "none" }, 13.2)
+          .to(".end-orbit-two", { scale: 0.96, rotation: -4, duration: 4.2, ease: "none" }, 13.2)
+          .to(".product-mark", { y: -4, duration: 2.4, ease: "sine.inOut" }, 15);
+
+        window.__timelines.main = tl;
+      </script>
+    </div>
+  </body>
+</html>
