@@ -68,6 +68,28 @@ test("loads existing threads without creating another and switches between them"
   await waitFor(() => expect(screen.getByText("Thread older")).toBeInTheDocument());
 });
 
+test("new conversation opens a blank thread without asking for a title", async () => {
+  window.localStorage.setItem("wcg_onboarding_seen", "1");
+  vi.spyOn(api, "listThreads").mockResolvedValue([
+    { id: "recent", title: "Recent thread", status: "active", updated_at: "2026-08-27T01:00:00Z" },
+  ]);
+  const createThread = vi.spyOn(api, "createThread").mockResolvedValue({
+    id: "new-thread",
+    title: "New conversation",
+    status: "active",
+    updated_at: "2026-08-27T02:00:00Z",
+  });
+
+  render(<App />);
+
+  await screen.findByText("Thread recent");
+  fireEvent.click(screen.getAllByRole("button", { name: "New conversation" })[0]);
+
+  await waitFor(() => expect(createThread).toHaveBeenCalledWith("New conversation"));
+  expect(screen.queryByRole("dialog", { name: "Start a conversation" })).not.toBeInTheDocument();
+  expect(await screen.findByText("Thread new-thread")).toBeInTheDocument();
+});
+
 test("places pinned conversations before the main conversation section", async () => {
   window.localStorage.setItem("wcg_onboarding_seen", "1");
   vi.spyOn(api, "listThreads").mockResolvedValue([

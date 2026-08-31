@@ -135,6 +135,29 @@ class GraphLayoutRequest(BaseModel):
     positions: dict[str, GraphPosition]
 
 
+AUTO_TITLE_PLACEHOLDERS = {"new conversation", "untitled thread"}
+
+
+def _title_from_prompt(prompt: str) -> str:
+    title = " ".join(prompt.split())
+    title = re.sub(r"^[#>*\-\s]+", "", title).strip()
+    if not title:
+        return "New conversation"
+    words = title.split()
+    if len(words) > 10:
+        title = " ".join(words[:10])
+    return title[:80].rstrip(".,;:!?") or "New conversation"
+
+
+def _should_auto_title(meta, thread_id: str) -> bool:
+    if meta.forked_from or meta.title.casefold() not in AUTO_TITLE_PLACEHOLDERS:
+        return False
+    return not any(
+        chunk["text"].startswith("**user:**")
+        for chunk in _chunks_with_metrics(thread_id)
+    )
+
+
 def _read_graph_layout(path: Path) -> dict:
     if not path.exists():
         return {}
@@ -701,7 +724,10 @@ def send_message(thread_id: str, req: MessageRequest):
             meta = store.load_meta(thread_id)
         except FileNotFoundError:
             raise HTTPException(404, "Thread not found")
+        should_auto_title = _should_auto_title(meta, thread_id)
         store.append_message(thread_id, req.role, req.content)
+        if req.role == "user" and should_auto_title:
+            meta = store.rename_thread(thread_id, _title_from_prompt(req.content))
         if req.role == "user":
             prompt = req.content if meta.copilot_initialized else _build_lineage_content(thread_id)
             reply = ask_copilot(meta.copilot_session_id, prompt)
@@ -728,6 +754,7 @@ def stream_message(thread_id: str, req: MessageRequest):
         meta = store.load_meta(thread_id)
         started_clock = time.monotonic()
         yield _activity("save", "Saving your message", "running")
+        should_auto_title = _should_auto_title(meta, thread_id)
         store.append_message(thread_id, "user", req.content)
         rebuild_index(VAULT_ROOT)
         autocommit(VAULT_ROOT, message=f"message in {thread_id}")
@@ -745,6 +772,10 @@ def stream_message(thread_id: str, req: MessageRequest):
             yield _activity("context", context_label, "running")
             prompt = req.content if meta.copilot_initialized else _build_lineage_content(thread_id)
             yield _activity("context", "Conversation context ready", "complete")
+            if should_auto_title:
+                meta = store.rename_thread(thread_id, _title_from_prompt(req.content))
+                rebuild_index(VAULT_ROOT)
+                autocommit(VAULT_ROOT, message=f"title thread {thread_id}")
             yield _activity("startup", "Starting Copilot", "running")
             for event in stream_copilot(meta.copilot_session_id, prompt):
                 if event["type"] == "delta":
