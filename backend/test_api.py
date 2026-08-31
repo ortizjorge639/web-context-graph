@@ -28,6 +28,27 @@ def test_create_root_thread():
         assert resp.json()["forked_from"] is None
 
 
+def test_first_user_message_auto_titles_placeholder_root_thread():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        thread = client.post("/threads", json={"title": "New conversation"}).json()
+
+        response = client.post(
+            f"/threads/{thread['id']}/messages",
+            json={
+                "role": "user",
+                "content": "How should we make the Windows launcher easier to trust?",
+            },
+        )
+
+        assert response.status_code == 200
+        updated = client.get(f"/threads/{thread['id']}").json()
+        assert updated["title"] == "How should we make the Windows launcher easier to trust"
+        assert updated["raw_content"].startswith(
+            "# How should we make the Windows launcher easier to trust"
+        )
+
+
 def test_cors_rejects_untrusted_browser_origins():
     with tempfile.TemporaryDirectory() as tmp:
         client = make_client(tmp)

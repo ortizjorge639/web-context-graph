@@ -60,6 +60,8 @@ Set `PORT` to choose a different local port, or set `WCG_NO_OPEN=1` to start the
 3. **Navigate the tree.** Map/Knowledge Tree views let you trace branches, return to a node, branch again, and open conversations.
 4. **Own the artifact.** Plain Markdown and YAML remain useful outside the interface, while local Git records every mutation.
 
+New root conversations open directly to the composer. The initial placeholder title is replaced from the first user request so you can start writing without naming the thread first.
+
 Arbitrary highlighted-text or span branching is not implemented. Branching is block-level today.
 
 ## Screenshots

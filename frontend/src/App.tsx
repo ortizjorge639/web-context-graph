@@ -58,8 +58,6 @@ function App() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-  const [newThreadTitle, setNewThreadTitle] = useState("");
-  const [createError, setCreateError] = useState("");
   const [tutorialReset, setTutorialReset] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [protectedTutorialBranches, setProtectedTutorialBranches] = useState(0);
@@ -244,6 +242,12 @@ function App() {
   function openForkedThread(id: string, initialMessage: string) {
     openThread(id);
     setBranchKickoff({ threadId: id, message: initialMessage });
+  }
+
+  function updateThreadSummary(thread: { id: string; title: string }) {
+    setThreads((current) => current.map((candidate) => (
+      candidate.id === thread.id ? { ...candidate, title: thread.title } : candidate
+    )));
   }
 
   function toggleThread(threadId: string) {
@@ -438,12 +442,24 @@ function App() {
     );
   }
 
-  function beginCreateThread() {
+  async function beginCreateThread() {
     setOpenThreadMenu(null);
     setShowContact(false);
-    setNewThreadTitle("");
-    setCreateError("");
+    if (isCreating) return;
     setIsCreating(true);
+    setReplayError("");
+    try {
+      const created = await createThread("New conversation");
+      setThreads((current) => [created, ...current]);
+      setThreadId(created.id);
+      setBranchKickoff(null);
+      setSidebarMode("conversations");
+      openMainView("thread");
+    } catch (error) {
+      setReplayError(error instanceof Error ? error.message : "Could not create the conversation.");
+    } finally {
+      setIsCreating(false);
+    }
   }
 
   async function refreshVault() {
@@ -504,24 +520,6 @@ function App() {
     setTutorialReset(reset);
     setShowResetDialog(false);
     setView("onboarding");
-  }
-
-  async function submitNewThread(event: React.FormEvent) {
-    event.preventDefault();
-    const title = newThreadTitle.trim();
-    if (!title) {
-      setCreateError("Give this conversation a short title.");
-      return;
-    }
-    try {
-      const created = await createThread(title);
-      setThreads((current) => [created, ...current]);
-      setThreadId(created.id);
-      setIsCreating(false);
-      openMainView("thread");
-    } catch (error) {
-      setCreateError(error instanceof Error ? error.message : "Could not create the conversation.");
-    }
   }
 
   if (view === "onboarding") {
@@ -608,7 +606,7 @@ function App() {
                 aria-label="Search conversations"
               />
             </label>
-            <button className="new-thread-button" onClick={beginCreateThread} title="New conversation">
+            <button className="new-thread-button" onClick={() => void beginCreateThread()} disabled={isCreating} title="New conversation">
               <PlusIcon />
               <span className="sidebar-label">New conversation</span>
             </button>
@@ -703,7 +701,7 @@ function App() {
               <option key={thread.id} value={thread.id}>{thread.title}</option>
             ))}
           </select>
-          <button onClick={beginCreateThread} aria-label="New conversation"><PlusIcon /></button>
+          <button onClick={() => void beginCreateThread()} disabled={isCreating} aria-label="New conversation"><PlusIcon /></button>
           <button onClick={() => setShowSettings(true)} aria-label="Open settings"><SettingsIcon /></button>
         </div>
 
@@ -715,6 +713,7 @@ function App() {
             initialMessage={branchKickoff?.threadId === threadId ? branchKickoff.message : undefined}
             onInitialMessageConsumed={() => setBranchKickoff(null)}
             onReforked={(replacementId) => openThread(replacementId)}
+            onThreadUpdated={updateThreadSummary}
           />
         )}
         {view === "thread" && !threadId && (
@@ -722,7 +721,7 @@ function App() {
             <span className="loading-mark"><ProductMark /></span>
             <strong>No conversations yet</strong>
             <p>Create a conversation to start building your graph.</p>
-            <button onClick={beginCreateThread}>New conversation</button>
+            <button onClick={() => void beginCreateThread()} disabled={isCreating}>New conversation</button>
           </div>
         )}
         {view === "graph" && (
@@ -797,50 +796,6 @@ function App() {
           </button>
         </nav>
       </section>
-
-      {isCreating && (
-        <div className="dialog-backdrop" role="presentation" onMouseDown={() => setIsCreating(false)}>
-          <form
-            className="app-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="new-thread-heading"
-            onSubmit={submitNewThread}
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="dialog-close"
-              onClick={() => setIsCreating(false)}
-              aria-label="Close"
-            >
-              <CloseIcon />
-            </button>
-            <span className="dialog-icon"><SparkIcon /></span>
-            <span className="dialog-kicker">A fresh direction</span>
-            <h2 id="new-thread-heading">Start a conversation</h2>
-            <p>Name the question, idea, or decision you want to explore.</p>
-            <label>
-              <span>Conversation title</span>
-              <input
-                autoFocus
-                value={newThreadTitle}
-                onChange={(event) => setNewThreadTitle(event.target.value)}
-                placeholder="e.g. Shape the first release"
-              />
-            </label>
-            {createError && <div className="dialog-error" role="alert">{createError}</div>}
-            <div className="dialog-actions">
-              <button type="button" className="button-quiet" onClick={() => setIsCreating(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="button-dark">
-                Create conversation
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {editingThread && (
         <div className="dialog-backdrop" role="presentation" onMouseDown={() => setEditingThread(null)}>
