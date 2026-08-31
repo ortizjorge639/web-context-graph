@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -488,7 +489,16 @@ def reveal_file(req: RevealFileRequest):
     target = _resolve_vault_path(req.path)
     if not target.exists():
         raise HTTPException(404, "Vault item not found")
-    subprocess.run(["open", "-R", str(target)], check=True)
+    if sys.platform == "win32":
+        if target.is_dir():
+            command = ["explorer", str(target)]
+        else:
+            command = ["explorer", f"/select,{target}"]
+    elif sys.platform == "darwin":
+        command = ["open", "-R", str(target)]
+    else:
+        command = ["xdg-open", str(target if target.is_dir() else target.parent)]
+    subprocess.run(command, check=True)
     return {"ok": True}
 
 

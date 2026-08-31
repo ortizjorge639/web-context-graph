@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import * as api from "./api";
 import { FilesExplorer } from "./FilesExplorer";
 import type { VaultFiles } from "./api";
 
@@ -118,4 +119,25 @@ test("nests branch folders under their parent and exposes management actions", (
   fireEvent.click(screen.getByLabelText(`Actions for ${child.title}`));
   fireEvent.click(screen.getByText("Rename"));
   expect(onRenameThread).toHaveBeenCalledWith(child.id);
+});
+
+test("reveals a file from the right-click menu", () => {
+  const reveal = vi.spyOn(api, "revealVaultFile").mockResolvedValue();
+
+  render(
+    <FilesExplorer
+      activeThreadId="active-thread"
+      selectedPath={null}
+      vault={vault}
+      onSelect={vi.fn()}
+    />,
+  );
+
+  fireEvent.contextMenu(screen.getByRole("button", { name: /thread.md/i }), {
+    clientX: 80,
+    clientY: 120,
+  });
+  fireEvent.click(screen.getByRole("menuitem", { name: /Reveal in/i }));
+
+  expect(reveal).toHaveBeenCalledWith("threads/active-thread/thread.md");
 });
