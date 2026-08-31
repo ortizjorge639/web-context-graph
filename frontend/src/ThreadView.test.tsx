@@ -129,6 +129,44 @@ test("surfaces agent and tool activity while waiting for output", async () => {
   await waitFor(() => expect(screen.queryByLabelText("Agent activity")).not.toBeInTheDocument());
 });
 
+test("propagates refreshed title after a failed first stream", async () => {
+  vi.spyOn(api, "getThread")
+    .mockResolvedValueOnce({
+      id: "t1",
+      title: "New conversation",
+      raw_content: "# New conversation\n",
+      forked_children: [],
+      chunks: [],
+      lineage_depth: 0,
+    })
+    .mockResolvedValueOnce({
+      id: "t1",
+      title: "How should we improve Windows support",
+      raw_content: "# How should we improve Windows support\n\n**user:** How should we improve Windows support?\n",
+      forked_children: [],
+      chunks: [{
+        id: "t1#c1",
+        kind: "block",
+        order: 1,
+        text: "**user:** How should we improve Windows support?",
+      }],
+      lineage_depth: 0,
+    });
+  vi.spyOn(api, "streamMessage").mockRejectedValue(new Error("copilot CLI failed"));
+  const onThreadUpdated = vi.fn();
+
+  render(<ThreadView threadId="t1" onThreadUpdated={onThreadUpdated} />);
+  fireEvent.change(await screen.findByLabelText("Message"), {
+    target: { value: "How should we improve Windows support?" },
+  });
+  fireEvent.click(screen.getByLabelText("Send message"));
+
+  await waitFor(() => expect(onThreadUpdated).toHaveBeenCalledWith({
+    id: "t1",
+    title: "How should we improve Windows support",
+  }));
+});
+
 test("creates a branch only after the branch prompt is submitted", async () => {
   vi.spyOn(api, "getThread").mockResolvedValue({
     id: "parent",
