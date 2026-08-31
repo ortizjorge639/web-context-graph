@@ -63,12 +63,14 @@ export function ThreadView({
   initialMessage,
   onInitialMessageConsumed,
   onReforked,
+  onThreadUpdated,
 }: {
   threadId: string;
   onForked?: (threadId: string, initialMessage: string) => void;
   initialMessage?: string;
   onInitialMessageConsumed?: () => void;
   onReforked?: (threadId: string, deletedThreadIds: string[]) => void;
+  onThreadUpdated?: (thread: { id: string; title: string }) => void;
 }) {
   const [title, setTitle] = useState("");
   const [chunks, setChunks] = useState<Chunk[]>([]);
@@ -105,8 +107,10 @@ export function ThreadView({
       setLineageDepth(data.lineage_depth ?? 0);
       setRawContent(data.raw_content ?? "");
       setForkedChildren(data.forked_children ?? []);
+      return data;
     } catch (refreshError) {
       setError(refreshError instanceof Error ? refreshError.message : "Could not open this conversation.");
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -206,7 +210,8 @@ export function ThreadView({
           )));
         }
       });
-      await refresh();
+      const refreshed = await refresh();
+      if (refreshed) onThreadUpdated?.({ id: refreshed.id, title: refreshed.title });
     } catch (sendError) {
       setError(sendError instanceof Error ? sendError.message : "Could not send your message.");
       await refresh();
@@ -215,7 +220,7 @@ export function ThreadView({
       setStreamingContent("");
       setIsSending(false);
     }
-  }, [refresh, threadId]);
+  }, [onThreadUpdated, refresh, threadId]);
 
   async function handleSend() {
     const message = input.trim();
