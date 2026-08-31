@@ -118,19 +118,54 @@ def test_files_endpoint_returns_relationship_tree_and_loads_content_lazily():
 
 def test_reveal_file_stays_inside_vault():
     with tempfile.TemporaryDirectory() as tmp:
+        import main
+
         client = make_client(tmp)
         thread = client.post("/threads", json={"title": "Reveal me"}).json()
         relative_path = f"threads/{thread['id']}/thread.md"
+        target = (main.VAULT_ROOT / relative_path).resolve()
 
-        with patch("main.subprocess.run") as run:
+        with patch("main.sys.platform", "darwin"), patch("main.subprocess.run") as run:
             response = client.post("/files/actions/reveal", json={"path": relative_path})
 
         assert response.json() == {"ok": True}
-        run.assert_called_once()
+        run.assert_called_once_with(["open", "-R", str(target)], check=True)
         assert client.post(
             "/files/actions/reveal",
             json={"path": "../outside.md"},
         ).status_code == 400
+
+
+def test_reveal_file_uses_platform_file_manager():
+    with tempfile.TemporaryDirectory() as tmp:
+        import main
+
+        client = make_client(tmp)
+        thread = client.post("/threads", json={"title": "Reveal me"}).json()
+        relative_file = f"threads/{thread['id']}/thread.md"
+        relative_folder = f"threads/{thread['id']}"
+        file_target = (main.VAULT_ROOT / relative_file).resolve()
+        folder_target = (main.VAULT_ROOT / relative_folder).resolve()
+
+        with patch("main.sys.platform", "win32"), patch("main.subprocess.run") as run:
+            assert client.post(
+                "/files/actions/reveal",
+                json={"path": relative_file},
+            ).status_code == 200
+            run.assert_called_once_with(
+                ["explorer", f"/select,{file_target}"],
+                check=True,
+            )
+
+        with patch("main.sys.platform", "linux"), patch("main.subprocess.run") as run:
+            assert client.post(
+                "/files/actions/reveal",
+                json={"path": relative_folder},
+            ).status_code == 200
+            run.assert_called_once_with(
+                ["xdg-open", str(folder_target)],
+                check=True,
+            )
 
 
 def test_refresh_vault_repairs_index_relationships():

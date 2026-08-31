@@ -1901,7 +1901,8 @@ body {
 }
 
 .explorer-menu-trigger svg,
-.explorer-menu button svg {
+.explorer-menu button svg,
+.explorer-context-menu button svg {
   width: 14px;
   height: 14px;
   fill: none;
@@ -1922,7 +1923,20 @@ body {
   box-shadow: 0 16px 40px rgba(35, 31, 38, 0.14);
 }
 
-.explorer-menu button {
+.explorer-context-menu {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  width: 190px;
+  padding: 5px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+  box-shadow: 0 16px 40px rgba(35, 31, 38, 0.14);
+}
+
+.explorer-menu button,
+.explorer-context-menu button {
   display: flex;
   height: 32px;
   align-items: center;
@@ -1937,7 +1951,8 @@ body {
   cursor: pointer;
 }
 
-.explorer-menu button:hover {
+.explorer-menu button:hover,
+.explorer-context-menu button:hover {
   color: var(--app-text);
   background: var(--app-subtle);
 }

@@ -15,7 +15,7 @@ The interface is a view over a durable Knowledge Tree you own: `thread.md` store
 
 ## Quickstart
 
-Lineage App currently supports macOS and Linux-style environments through its Bash launcher. The UI runs in a modern browser; the host machine runs the backend and Copilot CLI.
+Lineage App runs locally on Windows, macOS, and Linux. The UI runs in a modern browser; the host machine runs the backend and Copilot CLI.
 
 ### Prerequisites
 
@@ -33,16 +33,25 @@ cd web-context-graph
 copilot login
 ```
 
-Optionally choose a different vault directory, then start:
+Optionally choose a different vault directory, then start.
+
+On macOS or Linux:
 
 ```bash
 export WCG_VAULT_ROOT="$HOME/my-lineage-vault"
 ./scripts/run-local.sh
 ```
 
-Without `WCG_VAULT_ROOT`, data lives in `~/web-context-graph-data/`. The launcher checks for `python3`, `npm`, `git`, `copilot`, and `curl`; creates the backend virtual environment if needed; installs project dependencies; builds the frontend; binds FastAPI to `127.0.0.1`; and opens the browser. It does not clone the repository, install system tools, provide Copilot access, or authenticate your account.
+On Windows PowerShell:
 
-The repository does not provide a supported native-Windows launcher today. GitHub Copilot CLI supports Windows, but `scripts/run-local.sh` targets macOS/Linux-style environments.
+```powershell
+$env:WCG_VAULT_ROOT = "$env:USERPROFILE\my-lineage-vault"
+.\scripts\run-local.ps1
+```
+
+Without `WCG_VAULT_ROOT`, data lives in `~/web-context-graph-data/`. The launcher checks for Python, npm, Git, and `copilot`; creates the backend virtual environment if needed; installs project dependencies; builds the frontend; binds FastAPI to `127.0.0.1`; and opens the browser. It does not clone the repository, install system tools, provide Copilot access, or authenticate your account.
+
+Set `PORT` to choose a different local port, or set `WCG_NO_OPEN=1` to start the server without opening a browser. Copilot CLI calls default to a 5-minute quiet-output timeout; set `WCG_COPILOT_TIMEOUT_SECONDS` if your local agent regularly needs more time to respond.
 
 ## How it works
 
@@ -93,6 +102,8 @@ The vault defaults to `~/web-context-graph-data/` and can be changed with `WCG_V
 - `graph-layout.json`, when present, stores presentation state only.
 
 Existing `AGENTS.md` files are intentionally never overwritten. New vaults receive a guide that users can extend.
+
+The Files view can reveal vault folders and files in the host file manager. It opens Finder on macOS, File Explorer on Windows, and the default file manager on Linux.
 
 Lineage App initializes and commits to a local Git repository automatically. It does **not** configure or push to a GitHub remote. You may add and push your own remote manually; use a private repository when conversations may contain sensitive information.
 

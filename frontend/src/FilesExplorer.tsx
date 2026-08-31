@@ -19,6 +19,19 @@ export type FileSelection = {
   thread: VaultThread | null;
 };
 
+type ContextMenu = {
+  path: string;
+  x: number;
+  y: number;
+} | null;
+
+function revealLabel() {
+  const platform = navigator.platform.toLowerCase();
+  if (platform.includes("win")) return "Reveal in File Explorer";
+  if (platform.includes("mac")) return "Reveal in Finder";
+  return "Reveal in file manager";
+}
+
 export function FilesExplorer({
   activeThreadId,
   selectedPath,
@@ -40,6 +53,7 @@ export function FilesExplorer({
 }) {
   const [expansionOverrides, setExpansionOverrides] = useState<Record<string, boolean>>({});
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenu>(null);
   const [status, setStatus] = useState("");
 
   const tree = useMemo(() => {
@@ -77,13 +91,27 @@ export function FilesExplorer({
 
   async function reveal(path: string) {
     setOpenMenu(null);
+    setContextMenu(null);
     setStatus("");
     try {
       await revealVaultFile(path);
-      setStatus("Revealed in Finder");
+      setStatus(`Revealed in ${revealLabel().replace("Reveal in ", "")}`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not reveal vault item");
     }
+  }
+
+  function openContextMenu(
+    event: React.MouseEvent,
+    path: string,
+  ) {
+    event.preventDefault();
+    setOpenMenu(null);
+    setContextMenu({
+      path,
+      x: event.clientX,
+      y: event.clientY,
+    });
   }
 
   function renderFile(file: VaultFile, thread: VaultThread | null, depth: number) {
@@ -95,6 +123,7 @@ export function FilesExplorer({
         className={`explorer-file${depth > 0 ? " nested" : ""}${selectedPath === file.path ? " active" : ""}`}
         style={{ "--explorer-depth": depth } as React.CSSProperties}
         onClick={() => onSelect({ file, thread })}
+        onContextMenu={(event) => openContextMenu(event, file.path)}
       >
         <Icon />
         <span>{file.name}</span>
@@ -114,6 +143,7 @@ export function FilesExplorer({
             className={`explorer-folder${depth > 0 ? " nested" : ""}${isInLineage ? " in-lineage" : ""}${thread.id === activeThreadId ? " current" : ""}`}
             style={{ "--explorer-depth": depth } as React.CSSProperties}
             onClick={() => toggle(thread.id)}
+            onContextMenu={(event) => openContextMenu(event, thread.folder)}
             aria-expanded={isExpanded}
           >
             <ChevronIcon className={isExpanded ? "expanded" : ""} />
@@ -140,7 +170,7 @@ export function FilesExplorer({
                 setOpenMenu(null);
                 onRenameThread?.(thread.id);
               }}><EditIcon />Rename</button>
-              <button onClick={() => void reveal(thread.folder)}><FinderIcon />Reveal in Finder</button>
+              <button onClick={() => void reveal(thread.folder)}><FinderIcon />{revealLabel()}</button>
               <button className="danger" onClick={() => {
                 setOpenMenu(null);
                 onDeleteThread?.(thread.id);
@@ -162,7 +192,7 @@ export function FilesExplorer({
   }
 
   return (
-    <div className="files-explorer" aria-label="Vault explorer">
+    <div className="files-explorer" aria-label="Vault explorer" onClick={() => setContextMenu(null)}>
       <div className="explorer-root">
         <FilesIcon />
         <strong>{loadedVault.vault_name}</strong>
@@ -175,6 +205,20 @@ export function FilesExplorer({
         <small>{loadedVault.threads.length}</small>
       </div>
       {tree.roots.map((thread) => renderThread(thread))}
+      {contextMenu && (
+        <div
+          className="explorer-context-menu"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          role="menu"
+          aria-label="File actions"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button role="menuitem" onClick={() => void reveal(contextMenu.path)}>
+            <FinderIcon />
+            {revealLabel()}
+          </button>
+        </div>
+      )}
       {status && <div className="explorer-status" role="status">{status}</div>}
     </div>
   );

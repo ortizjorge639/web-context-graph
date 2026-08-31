@@ -11,9 +11,29 @@ trivial prompts -- do not call this in a tight loop or in test suites beyond
 a small number of smoke tests.
 """
 import json
-import selectors
+import os
+import queue
 import subprocess
+import threading
 import time
+
+DEFAULT_COPILOT_TIMEOUT_SECONDS = 300
+DEFAULT_SILENCE_NOTICE_INTERVAL_SECONDS = 5
+
+
+def _copilot_timeout(timeout: float | None) -> float:
+    if timeout is not None:
+        return timeout
+    configured = os.environ.get("WCG_COPILOT_TIMEOUT_SECONDS")
+    if not configured:
+        return DEFAULT_COPILOT_TIMEOUT_SECONDS
+    try:
+        parsed = float(configured)
+    except ValueError as error:
+        raise RuntimeError("WCG_COPILOT_TIMEOUT_SECONDS must be a number") from error
+    if parsed <= 0:
+        raise RuntimeError("WCG_COPILOT_TIMEOUT_SECONDS must be greater than zero")
+    return parsed
 
 
 def _tool_activity(event_type: str, data: dict) -> dict:
@@ -88,7 +108,8 @@ def _translate_stream_event(event: dict) -> dict | None:
     return None
 
 
-def ask_copilot(session_id: str, prompt: str, timeout: int = 60) -> str:
+def ask_copilot(session_id: str, prompt: str, timeout: float | None = None) -> str:
+    effective_timeout = _copilot_timeout(timeout)
     result = subprocess.run(
         [
             "copilot", "-p", prompt,
@@ -96,14 +117,15 @@ def ask_copilot(session_id: str, prompt: str, timeout: int = 60) -> str:
             "--allow-all-tools",
             "--no-remote",
         ],
-        capture_output=True, text=True, timeout=timeout,
+        capture_output=True, text=True, timeout=effective_timeout,
     )
     if result.returncode != 0:
         raise RuntimeError(f"copilot CLI failed: {result.stderr}")
     return result.stdout.strip()
 
 
-def stream_copilot(session_id: str, prompt: str, timeout: int = 60):
+def stream_copilot(session_id: str, prompt: str, timeout: float | None = None):
+    effective_timeout = _copilot_timeout(timeout)
     process = subprocess.Popen(
         [
             "copilot", "-p", prompt,
@@ -116,42 +138,87 @@ def stream_copilot(session_id: str, prompt: str, timeout: int = 60):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         bufsize=1,
     )
     if process.stdout is None:
         raise RuntimeError("copilot CLI did not expose a response stream")
 
-    selector = selectors.DefaultSelector()
-    selector.register(process.stdout, selectors.EVENT_READ, data="stdout")
+    output_queue: queue.Queue[tuple[str, str | None]] = queue.Queue()
+
+    def enqueue_lines(name: str, stream):
+        try:
+            for line in stream:
+                output_queue.put((name, line))
+        finally:
+            output_queue.put((name, None))
+
+    threading.Thread(
+        target=enqueue_lines,
+        args=("stdout", process.stdout),
+        daemon=True,
+    ).start()
     if process.stderr is not None:
-        selector.register(process.stderr, selectors.EVENT_READ, data="stderr")
-    deadline = time.monotonic() + timeout
+        threading.Thread(
+            target=enqueue_lines,
+            args=("stderr", process.stderr),
+            daemon=True,
+        ).start()
+    now = time.monotonic()
+    deadline = now + effective_timeout
+    next_silence_notice = now + DEFAULT_SILENCE_NOTICE_INTERVAL_SECONDS
     active_tool_ids: list[str] = []
     tool_sequence = 0
     stderr_lines: list[str] = []
+    active_streams = {"stdout"}
+    if process.stderr is not None:
+        active_streams.add("stderr")
 
     try:
-        while True:
+        while active_streams:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 process.kill()
-                raise TimeoutError(f"copilot CLI timed out after {timeout} seconds")
+                raise TimeoutError(
+                    "copilot CLI produced no output for "
+                    f"{effective_timeout:g} seconds"
+                )
 
-            ready = selector.select(timeout=min(0.25, remaining))
-            if not ready:
-                if process.poll() is not None:
-                    break
+            now = time.monotonic()
+            try:
+                stream_name, line = output_queue.get(
+                    timeout=min(
+                        0.25,
+                        DEFAULT_SILENCE_NOTICE_INTERVAL_SECONDS,
+                        remaining,
+                    )
+                )
+            except queue.Empty:
+                now = time.monotonic()
+                if now >= next_silence_notice:
+                    elapsed = round(now - (deadline - effective_timeout))
+                    yield {
+                        "type": "activity",
+                        "id": "copilot-waiting",
+                        "kind": "status",
+                        "label": "Waiting for Copilot",
+                        "detail": f"No output for {elapsed:g}s; the CLI is still running.",
+                        "state": "running",
+                    }
+                    next_silence_notice = (
+                        now + DEFAULT_SILENCE_NOTICE_INTERVAL_SECONDS
+                    )
+                continue
+            if line is None:
+                active_streams.discard(stream_name)
                 continue
 
-            key, _ = ready[0]
-            line = key.fileobj.readline()
-            if not line:
-                selector.unregister(key.fileobj)
-                if process.poll() is not None and not selector.get_map():
-                    break
-                continue
-            deadline = time.monotonic() + timeout
-            if key.data == "stderr":
+            deadline = time.monotonic() + effective_timeout
+            next_silence_notice = (
+                time.monotonic() + DEFAULT_SILENCE_NOTICE_INTERVAL_SECONDS
+            )
+            if stream_name == "stderr":
                 stderr_lines.append(line.rstrip())
                 stderr_lines = stderr_lines[-100:]
                 continue
@@ -175,9 +242,7 @@ def stream_copilot(session_id: str, prompt: str, timeout: int = 60):
         if return_code != 0:
             stderr = "\n".join(stderr_lines).strip()
             raise RuntimeError(f"copilot CLI failed: {stderr}")
-
     finally:
-        selector.close()
         if process.poll() is None:
             process.terminate()
             try:
