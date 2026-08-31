@@ -214,7 +214,8 @@ export function ThreadView({
       if (refreshed) onThreadUpdated?.({ id: refreshed.id, title: refreshed.title });
     } catch (sendError) {
       setError(sendError instanceof Error ? sendError.message : "Could not send your message.");
-      await refresh();
+      const refreshed = await refresh();
+      if (refreshed) onThreadUpdated?.({ id: refreshed.id, title: refreshed.title });
     } finally {
       setPendingUser("");
       setStreamingContent("");
