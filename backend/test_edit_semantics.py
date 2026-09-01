@@ -61,6 +61,35 @@ def test_in_place_edit_rejects_changes_to_existing_fork_anchor():
         assert response.status_code == 409
 
 
+def test_in_place_edit_rejects_changes_inside_protected_legacy_list_anchor():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        root = client.post("/threads", json={"title": "Root"}).json()
+        import main
+
+        main.store.append_message(
+            root["id"],
+            "assistant",
+            "## Options\n- A) do X\n- B) do Y",
+        )
+        main.store.create_thread(
+            title="Legacy child",
+            forked_from={"thread_id": root["id"], "chunk_id": f"{root['id']}#c1"},
+        )
+
+        response = client.post(
+            f"/threads/{root['id']}/edit",
+            json={
+                "new_content": (
+                    "# Root\n\n"
+                    "**assistant:** ## Options\n- A) do X\n- B) do something else\n"
+                ),
+            },
+        )
+
+        assert response.status_code == 409
+
+
 def test_refork_rejects_unrelated_branch():
     with tempfile.TemporaryDirectory() as tmp:
         client = make_client(tmp)
