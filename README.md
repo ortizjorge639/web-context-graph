@@ -55,14 +55,14 @@ Set `PORT` to choose a different local port, or set `WCG_NO_OPEN=1` to start the
 
 ## How it works
 
-1. **Branch a block.** Each agent response is split into addressable Markdown blocks. Choose a whole block to begin the next request from that exact point.
+1. **Branch a block.** Each agent response is split into addressable Markdown blocks, with list items treated as separate branchable slices. Choose a whole block or item to begin the next request from that exact point.
 2. **Preserve lineage.** The child thread receives root-to-fork context and continues independently; sibling branch content is excluded.
 3. **Navigate the tree.** Map/Knowledge Tree views let you trace branches, return to a node, branch again, and open conversations.
 4. **Own the artifact.** Plain Markdown and YAML remain useful outside the interface, while local Git records every mutation.
 
 New root conversations open directly to the composer. The initial placeholder title is replaced from the first user request so you can start writing without naming the thread first.
 
-Arbitrary highlighted-text or span branching is not implemented. Branching is block-level today.
+Arbitrary highlighted-text or span branching is not implemented. Branching is block/list-item level today.
 
 ## Screenshots
 

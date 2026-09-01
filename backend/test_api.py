@@ -100,10 +100,34 @@ def test_list_threads_returns_most_recent_first():
         client = make_client(tmp)
         first = client.post("/threads", json={"title": "First"}).json()
         second = client.post("/threads", json={"title": "Second"}).json()
-
         threads = client.get("/threads").json()
-
         assert [thread["id"] for thread in threads] == [second["id"], first["id"]]
+
+
+def test_list_threads_counts_descendants_without_recursive_metadata_reads():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(root["id"], "assistant", "Root answer")
+        child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": f"{root['id']}#c1", "prompt": "Child"},
+        ).json()
+        main.store.append_message(child["id"], "assistant", "Child answer")
+        grandchild = client.post(
+            f"/threads/{child['id']}/fork",
+            json={"chunk_id": f"{child['id']}#c2", "prompt": "Grandchild"},
+        ).json()
+
+        threads = client.get("/threads", params={"q": "Root"}).json()
+        root_summary = next(thread for thread in threads if thread["id"] == root["id"])
+        child_summary = next(thread for thread in client.get("/threads").json() if thread["id"] == child["id"])
+
+        assert root_summary["descendant_count"] == 2
+        assert child_summary["descendant_count"] == 1
+        assert grandchild["id"]
 
 
 def test_list_threads_includes_parent_relationships():
@@ -160,6 +184,84 @@ def test_fork_title_comes_from_prompt_and_lineage_stops_at_source():
         assert not any(chunk["id"] == f"{root['id']}#c2" for chunk in detail["chunks"])
         stored = Path(tmp, "threads", child["id"], "thread.md").read_text()
         assert "First" not in stored
+
+
+def test_fork_can_start_from_individual_list_item():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        root = client.post("/threads", json={"title": "Root"}).json()
+        client.post(
+            f"/threads/{root['id']}/messages",
+            json={
+                "role": "assistant",
+                "content": (
+                    "Azure AI Foundry best practices:\n\n"
+                    "1. Architecture/governance - centralize policy.\n"
+                    "2. Model selection - pick the right model.\n"
+                    "3. Cost control - route tasks deliberately."
+                ),
+            },
+        )
+
+        child = client.post(
+            f"/threads/{root['id']}/fork",
+            json={
+                "chunk_id": f"{root['id']}#c2.1",
+                "prompt": "Explore model selection",
+            },
+        ).json()
+        detail = client.get(f"/threads/{child['id']}").json()
+
+        visible = "\n".join(chunk["text"] for chunk in detail["chunks"])
+        assert "Model selection" in visible
+        assert "Cost control" not in visible
+
+
+def test_existing_coarse_branch_anchor_preserves_original_list_block():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(
+            root["id"],
+            "assistant",
+            "## Options\n- A) do X\n- B) do Y",
+        )
+        child = main.store.create_thread(
+            title="Existing child",
+            forked_from={"thread_id": root["id"], "chunk_id": f"{root['id']}#c1"},
+        )
+
+        detail = client.get(f"/threads/{root['id']}").json()
+
+        assert any(
+            chunk["id"] == f"{root['id']}#c1"
+            and "A) do X" in chunk["text"]
+            and "B) do Y" in chunk["text"]
+            for chunk in detail["chunks"]
+        )
+        assert child.id
+
+
+def test_can_fork_from_visible_protected_legacy_list_anchor():
+    with tempfile.TemporaryDirectory() as tmp:
+        client = make_client(tmp)
+        import main
+
+        root = client.post("/threads", json={"title": "Root"}).json()
+        main.store.append_message(root["id"], "assistant", "- A) do X\n- B) do Y")
+        main.store.create_thread(
+            title="Existing child",
+            forked_from={"thread_id": root["id"], "chunk_id": f"{root['id']}#c1"},
+        )
+
+        response = client.post(
+            f"/threads/{root['id']}/fork",
+            json={"chunk_id": f"{root['id']}#c1", "prompt": "Another branch"},
+        )
+
+        assert response.status_code == 200
 
 
 def test_legacy_embedded_lineage_is_not_rendered_twice():

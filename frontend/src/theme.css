@@ -3339,6 +3339,14 @@ body {
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 0 18px 46px rgba(35, 31, 38, 0.1);
   backdrop-filter: blur(22px) saturate(120%);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.composer:focus-within {
+  border-color: rgba(255, 107, 116, 0.52);
+  box-shadow:
+    0 18px 46px rgba(35, 31, 38, 0.1),
+    0 0 0 3px rgba(255, 107, 116, 0.12);
 }
 
 .composer textarea {
@@ -3369,14 +3377,16 @@ body {
   border: 0;
   border-radius: 16px;
   color: #fff;
-  background: var(--app-text);
+  background: var(--app-accent);
+  box-shadow: 0 10px 22px rgba(255, 107, 116, 0.22);
   cursor: pointer;
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition: background-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease, transform 140ms ease;
 }
 
 .composer-send:disabled {
-  color: #b7b4b8;
-  background: var(--app-subtle);
+  color: var(--app-tertiary);
+  background: transparent;
+  box-shadow: none;
   cursor: default;
 }
 
@@ -3391,6 +3401,10 @@ body {
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.app-shell .composer textarea:focus-visible {
+  outline: 0;
 }
 
 .composer-hint {
@@ -4408,7 +4422,7 @@ body {
 .app-shell select:focus-visible,
 .app-shell input:focus-visible,
 .app-shell textarea:focus-visible {
-  outline: 2px solid var(--app-text);
+  outline: 2px solid var(--app-accent);
   outline-offset: 3px;
 }
 

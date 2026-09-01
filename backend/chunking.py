@@ -1,6 +1,6 @@
 """
-Chunking logic per spec D4/D16: block-level split (paragraph, header+bullets,
-multi-option lists) is the primary chunk boundary. Chunking is a
+Chunking logic per spec D4/D16: block-level split (paragraph, header,
+individual list item) is the primary chunk boundary. Chunking is a
 RENDERING-TIME concern only (per Feature Breakdown) -- this module never
 mutates the stored thread.md, it only computes chunk boundaries + stable IDs
 for the display layer and for fork/backlink addressing.
@@ -18,14 +18,30 @@ class Chunk:
 
 
 def chunk_markdown(text: str, thread_id: str) -> list[Chunk]:
-    blocks = _split_into_blocks(text)
-    return [
-        Chunk(id=f"{thread_id}#c{i}", kind="block", order=i, text=block)
-        for i, block in enumerate(blocks)
-    ]
+    return chunk_markdown_with_protected_ids(text, thread_id, set())
 
 
-def _split_into_blocks(text: str) -> list[str]:
+def chunk_markdown_with_protected_ids(
+    text: str,
+    thread_id: str,
+    protected_chunk_ids: set[str],
+) -> list[Chunk]:
+    chunks: list[Chunk] = []
+    for coarse_order, block in enumerate(_split_into_coarse_blocks(text)):
+        coarse_id = f"{thread_id}#c{coarse_order}"
+        is_protected = coarse_id in protected_chunk_ids
+        parts = [block] if is_protected else _split_list_items(block)
+        contains_list = any(_is_list_marker(line) for line in block.split("\n"))
+        for part_index, part in enumerate(parts):
+            if is_protected or not contains_list:
+                chunk_id = coarse_id if part_index == 0 else f"{coarse_id}.{part_index}"
+            else:
+                chunk_id = f"{coarse_id}.{part_index}"
+            chunks.append(Chunk(id=chunk_id, kind="block", order=len(chunks), text=part))
+    return chunks
+
+
+def _split_into_coarse_blocks(text: str) -> list[str]:
     lines = text.split("\n")
     blocks: list[str] = []
     current: list[str] = []
@@ -45,11 +61,14 @@ def _split_into_blocks(text: str) -> list[str]:
             flush()
             current.append(line)
             i += 1
-            while i < len(lines) and (
-                re.match(r"^\s*[-*]\s", lines[i]) or re.match(r"^\s*\d+[.)]\s", lines[i])
-            ):
-                current.append(lines[i])
-                i += 1
+            if i < len(lines) and _is_list_marker(lines[i]):
+                while (
+                    i < len(lines)
+                    and lines[i].strip()
+                    and not re.match(r"^#{1,6}\s", lines[i])
+                ):
+                    current.append(lines[i])
+                    i += 1
             flush()
             continue
         if line.strip() == "":
@@ -60,3 +79,30 @@ def _split_into_blocks(text: str) -> list[str]:
         i += 1
     flush()
     return blocks
+
+
+def _is_list_marker(line: str) -> bool:
+    return bool(
+        re.match(
+            r"^\s*(?:\*\*(?:user|assistant|system):\*\*\s*)?(?:[-*]\s|\d+[.)]\s)",
+            line,
+        )
+    )
+
+
+def _split_list_items(block: str) -> list[str]:
+    lines = block.split("\n")
+    parts: list[list[str]] = []
+    current: list[str] = []
+
+    def flush():
+        if current:
+            parts.append(current.copy())
+            current.clear()
+
+    for line in lines:
+        if _is_list_marker(line):
+            flush()
+        current.append(line)
+    flush()
+    return ["\n".join(part).strip() for part in parts if "\n".join(part).strip()]
