@@ -36,7 +36,6 @@ import {
   SparkIcon,
   ThreadIcon,
   TrashIcon,
-  UserIcon,
 } from "./Icons";
 import "./theme.css";
 
@@ -675,13 +674,6 @@ function App() {
                 <a href="https://www.linkedin.com/in/jorgeortizflores" target="_blank" rel="noreferrer">LinkedIn · Jorge Ortiz Flores</a>
               </div>
             )}
-          </div>
-          <div className="sidebar-profile" title="Jorge Ortiz">
-            <span><UserIcon /></span>
-            <div className="sidebar-label">
-              <strong>Jorge Ortiz</strong>
-              <small>@jojiguy639</small>
-            </div>
           </div>
         </div>
         {replayError && <div className="sidebar-error" role="alert">{replayError}</div>}
