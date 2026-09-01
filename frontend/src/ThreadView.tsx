@@ -88,6 +88,7 @@ export function ThreadView({
   const [streamingContent, setStreamingContent] = useState("");
   const [streamingElapsedMs, setStreamingElapsedMs] = useState(0);
   const [streamActivities, setStreamActivities] = useState<StreamActivity[]>([]);
+  const [selectedChunkId, setSelectedChunkId] = useState<string | null>(null);
   const [editSource, setEditSource] = useState<PresentedChunk | null>(null);
   const [editedContent, setEditedContent] = useState("");
   const [reforkSource, setReforkSource] = useState<PresentedChunk | null>(null);
@@ -148,6 +149,12 @@ export function ThreadView({
       ))
       .map(presentChunk),
     [chunks],
+  );
+  const visibleSelectedChunkId = useMemo(
+    () => selectedChunkId && presentedChunks.some((chunk) => chunk.id === selectedChunkId)
+      ? selectedChunkId
+      : null,
+    [presentedChunks, selectedChunkId],
   );
 
   useEffect(() => {
@@ -335,7 +342,11 @@ export function ThreadView({
   }
 
   return (
-    <div className="thread-view">
+    <div className="thread-view" onClick={(event) => {
+      if (!(event.target as HTMLElement).closest(".message-block")) {
+        setSelectedChunkId(null);
+      }
+    }}>
       <header className="thread-header">
         <div>
           <span className="eyebrow">Conversation</span>
@@ -389,6 +400,8 @@ export function ThreadView({
                   role={chunk.role}
                   trace={chunk.trace}
                   metrics={chunk.metrics}
+                  selected={visibleSelectedChunkId === chunk.id}
+                  onSelect={chunk.is_ancestor ? undefined : () => setSelectedChunkId(chunk.id)}
                   traceExpanded={expandedTrace.has(chunk.id)}
                   onToggleTrace={() => toggleTrace(chunk.id)}
                   onCopy={chunk.role === "user" || chunk.is_ancestor ? undefined : () => navigator.clipboard.writeText(chunk.content)}

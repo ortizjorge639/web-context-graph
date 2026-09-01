@@ -1135,11 +1135,6 @@ body {
   background: var(--app-subtle);
 }
 
-.theme-dark .sidebar-profile > span {
-  color: #fff;
-  background: #d13b49;
-}
-
 .theme-dark .thread-header {
   background: rgba(18, 17, 20, 0.78);
 }
@@ -1168,6 +1163,11 @@ body {
 
 .theme-dark .ancestor-chunk {
   opacity: 0.58;
+}
+
+.theme-dark ::selection {
+  color: #fff;
+  background: rgba(255, 107, 116, 0.58);
 }
 
 .theme-dark .branch-composer-context,
@@ -1465,12 +1465,6 @@ body {
 
 .sidebar-collapsed .sidebar-footer {
   align-items: center;
-}
-
-.sidebar-collapsed .sidebar-profile {
-  width: 46px;
-  justify-content: center;
-  padding-inline: 0;
 }
 
 .conversation-tools {
@@ -2216,42 +2210,6 @@ body {
   background: var(--app-subtle);
 }
 
-.sidebar-profile {
-  display: flex;
-  min-height: 46px;
-  align-items: center;
-  gap: 9px;
-  margin-top: 4px;
-  padding: 5px 7px;
-  border-radius: 12px;
-}
-
-.sidebar-profile > span {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 10px;
-  color: #fff;
-  background: var(--app-text);
-}
-
-.sidebar-profile > div {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
-}
-
-.sidebar-profile strong {
-  font-size: 0.6875rem;
-}
-
-.sidebar-profile small {
-  color: var(--app-tertiary);
-  font-size: 0.5625rem;
-}
-
 .replay-button {
   min-height: 42px;
   margin-top: 8px;
@@ -2711,8 +2669,10 @@ body {
 
 .message-assistant .message-text:hover,
 .message-assistant .message-text:focus-within,
+.message-assistant.message-selected .message-text,
 .message-content .message-text:hover,
-.message-content .message-text:focus-within {
+.message-content .message-text:focus-within,
+.message-content.message-selected .message-text {
   outline-color: rgba(255, 70, 83, 0.78);
 }
 
@@ -3060,6 +3020,7 @@ body {
 
 .message-block:has(.message-text:hover) .message-actions,
 .message-block:has(.message-text:focus-within) .message-actions,
+.message-block.message-selected .message-actions,
 .message-actions:hover,
 .message-actions:focus-within {
   opacity: 1;

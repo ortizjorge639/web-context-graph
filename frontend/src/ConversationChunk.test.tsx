@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { expect, test } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
 import { ConversationChunk } from "./ConversationChunk";
 
 test("renders assistant GitHub-flavored Markdown", () => {
@@ -56,4 +56,29 @@ test("shows response metrics on an assistant continuation block", () => {
 
   expect(screen.getByText("gpt-test")).toBeInTheDocument();
   expect(screen.getByText("3 tokens")).toBeInTheDocument();
+});
+
+test("marks a clicked chunk as selectable without hijacking action buttons", () => {
+  const onSelect = vi.fn();
+  const onBranch = vi.fn();
+  const { container } = render(
+    <ConversationChunk
+      role="assistant"
+      content="Branchable answer"
+      onSelect={onSelect}
+      onBranch={onBranch}
+      selected
+    />,
+  );
+
+  const chunk = container.querySelector(".message-block");
+  expect(chunk).toHaveClass("message-selected");
+  expect(chunk).toHaveAttribute("aria-selected", "true");
+
+  fireEvent.click(screen.getByText("Branchable answer"));
+  expect(onSelect).toHaveBeenCalledTimes(1);
+
+  fireEvent.click(screen.getByLabelText("Branch from this chunk"));
+  expect(onBranch).toHaveBeenCalledTimes(1);
+  expect(onSelect).toHaveBeenCalledTimes(1);
 });

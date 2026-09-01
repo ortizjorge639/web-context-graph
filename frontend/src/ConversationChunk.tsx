@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { MouseEvent } from "react";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import { BranchIcon, ChevronIcon, CopyIcon, EditIcon, SparkIcon } from "./Icons";
@@ -16,6 +17,8 @@ export function ConversationChunk({
   onBranch,
   onEdit,
   onRefork,
+  onSelect,
+  selected = false,
   compact = false,
   metrics,
   streaming = false,
@@ -31,6 +34,8 @@ export function ConversationChunk({
   onBranch?: () => void;
   onEdit?: () => void;
   onRefork?: () => void;
+  onSelect?: () => void;
+  selected?: boolean;
   compact?: boolean;
   metrics?: MessageMetrics;
   streaming?: boolean;
@@ -56,8 +61,17 @@ export function ConversationChunk({
     return DOMPurify.sanitize(externalLinks, { ADD_ATTR: ["target", "rel"] });
   }, [content, role]);
 
+  function handleClick(event: MouseEvent<HTMLElement>) {
+    if ((event.target as HTMLElement).closest("button, a")) return;
+    onSelect?.();
+  }
+
   return (
-    <article className={`message-block message-${role}${compact ? " message-compact" : ""}${streaming ? " message-streaming" : ""}`}>
+    <article
+      className={`message-block message-${role}${compact ? " message-compact" : ""}${streaming ? " message-streaming" : ""}${selected ? " message-selected" : ""}`}
+      onClick={handleClick}
+      aria-selected={selected || undefined}
+    >
       <div className="message-body">
         {streaming && activities.length > 0 && (
           <section className="agent-activity" aria-label="Agent activity" aria-live="polite">
