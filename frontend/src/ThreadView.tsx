@@ -342,7 +342,11 @@ export function ThreadView({
   }
 
   return (
-    <div className="thread-view">
+    <div className="thread-view" onClick={(event) => {
+      if (!(event.target as HTMLElement).closest(".message-block")) {
+        setSelectedChunkId(null);
+      }
+    }}>
       <header className="thread-header">
         <div>
           <span className="eyebrow">Conversation</span>
@@ -380,9 +384,7 @@ export function ThreadView({
             <p>Ask a question, untangle a decision, or follow a thought wherever it leads.</p>
           </div>
         ) : (
-          <div className="message-list" onClick={(event) => {
-            if (event.target === event.currentTarget) setSelectedChunkId(null);
-          }}>
+          <div className="message-list">
             {presentedChunks.map((chunk) => (
               <div
                 key={chunk.id}

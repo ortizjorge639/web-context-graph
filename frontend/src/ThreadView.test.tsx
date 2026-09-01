@@ -58,6 +58,9 @@ test("left-clicking a chunk selects it so actions persist", async () => {
   fireEvent.click(screen.getByText("Second branchable answer"));
   expect(container.querySelector('[data-chunk-id="t1#c1"] .message-block')).not.toHaveClass("message-selected");
   expect(container.querySelector('[data-chunk-id="t1#c2"] .message-block')).toHaveClass("message-selected");
+
+  fireEvent.click(screen.getByLabelText("Message"));
+  expect(container.querySelector('[data-chunk-id="t1#c2"] .message-block')).not.toHaveClass("message-selected");
 });
 
 test("streams a response and renders persisted message metrics", async () => {
