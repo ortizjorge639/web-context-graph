@@ -1170,6 +1170,11 @@ body {
   opacity: 0.58;
 }
 
+.theme-dark ::selection {
+  color: #fff;
+  background: rgba(255, 107, 116, 0.58);
+}
+
 .theme-dark .branch-composer-context,
 .theme-dark .composer {
   border-color: var(--app-border);
@@ -2711,8 +2716,10 @@ body {
 
 .message-assistant .message-text:hover,
 .message-assistant .message-text:focus-within,
+.message-assistant.message-selected .message-text,
 .message-content .message-text:hover,
-.message-content .message-text:focus-within {
+.message-content .message-text:focus-within,
+.message-content.message-selected .message-text {
   outline-color: rgba(255, 70, 83, 0.78);
 }
 
@@ -3060,6 +3067,7 @@ body {
 
 .message-block:has(.message-text:hover) .message-actions,
 .message-block:has(.message-text:focus-within) .message-actions,
+.message-block.message-selected .message-actions,
 .message-actions:hover,
 .message-actions:focus-within {
   opacity: 1;
