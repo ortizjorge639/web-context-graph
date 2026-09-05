@@ -43,6 +43,7 @@ jobs:
 
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run test:table-overflow
+      - run: npm run test:map-viewport
 
   windows:
     runs-on: windows-latest

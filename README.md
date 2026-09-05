@@ -154,6 +154,7 @@ npm run build
 # Real-browser row-action clipping regression (synthetic API; no vault)
 npx playwright install chromium --only-shell
 npm run test:table-overflow
+npm run test:map-viewport
 ```
 
 The full backend suite runs real authenticated Copilot CLI integration tests:

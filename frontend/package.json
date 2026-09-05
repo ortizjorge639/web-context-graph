@@ -10,6 +10,7 @@
     "dev": "vite",
     "test": "vitest run",
     "test:table-overflow": "node scripts/check-table-row-overflow.mjs",
+    "test:map-viewport": "node scripts/check-map-viewport.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
