@@ -1,0 +1,71 @@
+@font-face {
+  font-family: "Lineage Sans";
+  src: url("./node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: #f8f7f9;
+  color: #111012;
+  font-family: "Lineage Sans", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+#main { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+#stage { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+.copy { position: absolute; pointer-events: none; opacity: 0; }
+.copy-left { left: 116px; top: 286px; width: 660px; }
+h1, h2, p { margin: 0; }
+.copy h1, .copy h2 {
+  font-size: 100px;
+  font-weight: 580;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.copy p { margin-top: 36px; font-size: 29px; line-height: 1.45; color: #625e65; }
+.copy-wide { left: 90px; top: 88px; width: 1740px; text-align: center; }
+.copy-wide h2 { font-size: 80px; }
+.copy-wide p { margin-top: 22px; }
+#child-copy { left: 90px; top: 88px; width: 1740px; text-align: center; }
+#child-copy h2 { font-size: 80px; }
+#child-copy p { margin-top: 22px; }
+#opening-copy { opacity: 1; }
+.caption {
+  position: absolute;
+  bottom: 64px;
+  left: 90px;
+  width: 1740px;
+  text-align: center;
+  font-size: 26px;
+  line-height: 1.5;
+  color: #625e65;
+  opacity: 0;
+}
+#file-labels {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  font-size: 25px;
+  font-weight: 560;
+  opacity: 0;
+}
+#file-labels span { position: absolute; width: 440px; margin-left: -220px; }
+#files-caption { display: flex; justify-content: center; gap: 46px; font-size: 24px; }
+#files-caption b { font-size: 20px; font-weight: 400; color: #625e65; margin-left: 5px; }
+#end-card { position: absolute; inset: 0; background: #121114; color: #f8f7f9; opacity: 0; }
+#end-content { position: absolute; inset: 0; text-align: center; opacity: 0; }
+.brand-mark {
+  position: absolute; left: 911px; top: 217px; width: 98px; height: 98px;
+  fill: #ff6b74; stroke: #ff6b74; stroke-width: 2.4;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+#end-content h2 {
+  position: absolute; top: 374px; width: 100%;
+  font-size: 126px; line-height: 1.08; font-weight: 570; letter-spacing: -0.04em;
+}
+.tagline { position: absolute; top: 566px; width: 100%; font-size: 37px; letter-spacing: -0.025em; }
+.boundary { position: absolute; top: 681px; width: 100%; font-size: 26px; color: #c1bac6; }
+.url { position: absolute; top: 833px; width: 100%; font-size: 28px; color: #f8f7f9; }

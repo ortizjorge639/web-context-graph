@@ -90,8 +90,11 @@ Current captures from one coherent Lineage App journey:
 
 ## Promotional media
 
-Watch the [17-second Lineage App highlight reel](media/promo/lineage-app-highlight-reel.mp4)
-or inspect its [editable HyperFrames project](media/promo/lineage-app-highlight-reel/).
+Watch [Follow a thought. — the 23-second cinematic reel](media/promo/lineage-cinematic.mp4),
+built with Three.js and rendered by HyperFrames
+([reproducible source](media/promo/lineage-cinematic/)).
+The [original 17-second highlight reel](media/promo/lineage-app-highlight-reel.mp4)
+and its [editable project](media/promo/lineage-app-highlight-reel/) remain available.
 
 ## Data, Git, and agent access
 

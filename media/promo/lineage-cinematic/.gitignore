@@ -1,0 +1,6 @@
+node_modules/
+renders/
+snapshots/
+.debug/
+.hyperframes/
+review/
