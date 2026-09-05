@@ -1,7 +1,62 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { vi, test, expect } from "vitest";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { vi, test, expect, afterEach } from "vitest";
 import { ThreadView } from "./ThreadView";
 import * as api from "./api";
+
+afterEach(() => vi.restoreAllMocks());
+
+function mockTableThread() {
+  const header = "| Command | Purpose |\n| :--- | ---: |";
+  const table = `${header}\n| /help | Help |\n| /plan | Plan |\n| /diff | Diff |`;
+  const rows = ["/help | Help", "/plan | Plan", "/diff | Diff"].map((text, index) => ({
+    id: `t1#c1.row${index}`, table_index: 0, row_index: index,
+    text: `${header}\n| ${text} |`, end_offset: 0,
+  }));
+  vi.spyOn(api, "getThread").mockResolvedValue({
+    id: "t1", title: "Commands", raw_content: `# Commands\n\n${table}\n`,
+    forked_children: [{ thread_id: "old-child", chunk_id: rows[1].id, title: "Plan branch" }],
+    chunks: [{ id: "t1#c1", kind: "block", order: 1, text: table, table_rows: rows }],
+    lineage_depth: 0,
+  });
+  return rows;
+}
+
+test("fork composer previews just the selected row with headers and sends its nested anchor", async () => {
+  const rows = mockTableThread();
+  const fork = vi.spyOn(api, "forkThread").mockResolvedValue({
+    id: "child", title: "Explore plan", status: "active", updated_at: "",
+  });
+  const { container } = render(<ThreadView threadId="t1" />);
+  fireEvent.click(await screen.findByLabelText("Branch from table row 2"));
+  const preview = container.querySelector(".branch-composer-context")!;
+  expect(preview).toHaveTextContent("Branching from table row");
+  expect(preview).toHaveTextContent("Command");
+  expect(preview).toHaveTextContent("Purpose");
+  expect(preview).toHaveTextContent("/plan");
+  expect(preview).not.toHaveTextContent("/help");
+  expect(preview).not.toHaveTextContent("/diff");
+  expect(container.querySelector('[data-chunk-id="t1#c1.row1"]')).toHaveClass("table-row-selected");
+  fireEvent.change(screen.getByLabelText("Message"), { target: { value: "Explore plan" } });
+  fireEvent.click(screen.getByLabelText("Create branch"));
+  await waitFor(() => expect(fork).toHaveBeenCalledWith("t1", rows[1].id, "Explore plan"));
+});
+
+test("revisiting a row branch exposes replace with explicit destructive confirmation", async () => {
+  const rows = mockTableThread();
+  const refork = vi.spyOn(api, "reforkThread").mockResolvedValue({
+    deleted_thread_ids: ["old-child"],
+    new_thread: { id: "replacement", title: "Replacement", status: "active", updated_at: "" },
+  });
+  render(<ThreadView threadId="t1" />);
+  fireEvent.click(await screen.findByLabelText("Replace branch from table row 2"));
+  expect(refork).not.toHaveBeenCalled();
+  const dialog = screen.getByRole("alertdialog");
+  expect(dialog).toHaveTextContent("all of its descendants will be deleted");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Delete and replace" }));
+  await waitFor(() => expect(refork).toHaveBeenCalledWith(
+    "t1", "old-child", rows[1].id, "Replacement for Plan branch",
+  ));
+});
 
 function renderWithChunks(chunks: Array<{ id: string; kind: string; order: number; text: string }>) {
   vi.spyOn(api, "getThread").mockResolvedValue({

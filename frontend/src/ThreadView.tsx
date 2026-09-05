@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { editThread, forkThread, getThread, reforkThread, streamMessage } from "./api";
-import type { ForkedChild, MessageMetrics, StreamActivity } from "./api";
+import type { ForkedChild, MessageMetrics, StreamActivity, TableRowAnchor } from "./api";
 import {
   CloseIcon,
   EditIcon,
@@ -10,6 +10,7 @@ import {
   SparkIcon,
 } from "./Icons";
 import { ConversationChunk } from "./ConversationChunk";
+import { MarkdownContent } from "./MarkdownContent";
 import "./theme.css";
 
 interface Chunk {
@@ -21,6 +22,7 @@ interface Chunk {
   metrics?: MessageMetrics;
   owner_thread_id?: string;
   is_ancestor?: boolean;
+  table_rows?: TableRowAnchor[];
 }
 
 type PresentedChunk = Chunk & {
@@ -151,7 +153,8 @@ export function ThreadView({
     [chunks],
   );
   const visibleSelectedChunkId = useMemo(
-    () => selectedChunkId && presentedChunks.some((chunk) => chunk.id === selectedChunkId)
+    () => selectedChunkId && presentedChunks.some((chunk) => chunk.id === selectedChunkId
+      || chunk.table_rows?.some((row) => row.id === selectedChunkId))
       ? selectedChunkId
       : null,
     [presentedChunks, selectedChunkId],
@@ -277,6 +280,10 @@ export function ThreadView({
     window.requestAnimationFrame(() => composerRef.current?.focus());
   }
 
+  function rowSource(chunk: PresentedChunk, row: TableRowAnchor): PresentedChunk {
+    return { ...chunk, id: row.id, content: row.text, kind: "table-row", role: "content" };
+  }
+
   function beginEdit(chunk: PresentedChunk) {
     setEditSource(chunk);
     setEditedContent(chunk.content);
@@ -400,6 +407,15 @@ export function ThreadView({
                   role={chunk.role}
                   trace={chunk.trace}
                   metrics={chunk.metrics}
+                  tableRows={chunk.table_rows}
+                  selectedRowId={visibleSelectedChunkId}
+                  onSelectRow={chunk.is_ancestor ? undefined : (row) => setSelectedChunkId(row.id)}
+                  onBranchRow={chunk.is_ancestor || chunk.role === "user" ? undefined : (row) => {
+                    setSelectedChunkId(row.id);
+                    beginBranch(rowSource(chunk, row));
+                  }}
+                  onReforkRow={chunk.is_ancestor ? undefined : (row) => beginRefork(rowSource(chunk, row))}
+                  reforkRowIds={forkedChildren.map((child) => child.chunk_id)}
                   selected={visibleSelectedChunkId === chunk.id}
                   onSelect={chunk.is_ancestor ? undefined : () => setSelectedChunkId(chunk.id)}
                   traceExpanded={expandedTrace.has(chunk.id)}
@@ -435,8 +451,10 @@ export function ThreadView({
         {forkSource && (
           <div className="branch-composer-context">
             <div>
-              <span>Branching from</span>
-              <strong>{forkSource.content}</strong>
+              <span>{forkSource.kind === "table-row" ? "Branching from table row" : "Branching from"}</span>
+              {forkSource.kind === "table-row"
+                ? <div className="branch-row-preview markdown-body"><MarkdownContent content={forkSource.content} /></div>
+                : <strong>{forkSource.content}</strong>}
             </div>
             <button
               type="button"

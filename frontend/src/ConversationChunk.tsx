@@ -1,9 +1,7 @@
-import { useMemo } from "react";
 import type { MouseEvent } from "react";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
 import { BranchIcon, ChevronIcon, CopyIcon, EditIcon, SparkIcon } from "./Icons";
-import type { MessageMetrics, StreamActivity } from "./api";
+import type { MessageMetrics, StreamActivity, TableRowAnchor } from "./api";
+import { MarkdownContent } from "./MarkdownContent";
 
 export type ConversationRole = "user" | "assistant" | "system" | "content";
 
@@ -24,6 +22,12 @@ export function ConversationChunk({
   streaming = false,
   streamingElapsedMs = 0,
   activities = [],
+  tableRows,
+  selectedRowId,
+  onSelectRow,
+  onBranchRow,
+  onReforkRow,
+  reforkRowIds,
 }: {
   content: string;
   role: ConversationRole;
@@ -41,6 +45,12 @@ export function ConversationChunk({
   streaming?: boolean;
   streamingElapsedMs?: number;
   activities?: StreamActivity[];
+  tableRows?: TableRowAnchor[];
+  selectedRowId?: string | null;
+  onSelectRow?: (row: TableRowAnchor) => void;
+  onBranchRow?: (row: TableRowAnchor) => void;
+  onReforkRow?: (row: TableRowAnchor) => void;
+  reforkRowIds?: string[];
 }) {
   const timestamp = metrics
     ? new Date(metrics.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
@@ -51,15 +61,6 @@ export function ConversationChunk({
       : `${(metrics.elapsed_ms / 1000).toFixed(1)}s`
     : "";
   const isAssistantOutput = role === "assistant" || role === "content";
-  const renderedMarkdown = useMemo(() => {
-    if (role === "user") return "";
-    const parsed = marked.parse(content, { async: false, gfm: true });
-    const externalLinks = parsed.replace(
-      /<a /g,
-      '<a target="_blank" rel="noreferrer" ',
-    );
-    return DOMPurify.sanitize(externalLinks, { ADD_ATTR: ["target", "rel"] });
-  }, [content, role]);
 
   function handleClick(event: MouseEvent<HTMLElement>) {
     if ((event.target as HTMLElement).closest("button, a")) return;
@@ -96,7 +97,13 @@ export function ConversationChunk({
         <div className={`message-text${role === "user" ? "" : " markdown-body"}`}>
           {role === "user"
             ? content
-            : <div className="markdown-body-rendered" dangerouslySetInnerHTML={{ __html: renderedMarkdown }} />}
+            : <MarkdownContent content={content}
+                tableRows={streaming ? [] : tableRows}
+                selectedRowId={selectedRowId}
+                onSelectRow={onSelectRow}
+                onBranchRow={streaming ? undefined : onBranchRow}
+                onReforkRow={onReforkRow}
+                reforkRowIds={reforkRowIds} />}
           {streaming && <span className="streaming-cursor" aria-label="Generating response" />}
         </div>
 

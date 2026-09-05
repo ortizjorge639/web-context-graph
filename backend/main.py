@@ -25,7 +25,7 @@ from pydantic import BaseModel
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from storage import ThreadStore
-from chunking import chunk_markdown, chunk_markdown_with_protected_ids
+from chunking import chunk_markdown, chunk_markdown_with_protected_ids, chunk_anchors
 from index_builder import rebuild_index
 from copilot_engine import ask_copilot, stream_copilot
 from autocommit import ensure_git_repo, autocommit
@@ -160,9 +160,9 @@ def _should_auto_title(meta, thread_id: str) -> bool:
 
 def _protected_chunk_ids(meta) -> set[str]:
     return {
-        child["chunk_id"]
+        child["chunk_id"].split(".row", 1)[0]
         for child in meta.forked_children
-        if "." not in child["chunk_id"].rsplit("#c", 1)[-1]
+        if "." not in child["chunk_id"].split(".row", 1)[0].rsplit("#c", 1)[-1]
     }
 
 
@@ -631,24 +631,46 @@ def _lineage_depth(thread_id: str) -> int:
 
 def _chunks_with_metrics(thread_id: str) -> list[dict]:
     meta = store.load_meta(thread_id)
+    content = store.read_content(thread_id)
     protected_chunk_ids = _protected_chunk_ids(meta)
     metrics_by_order = {
         metrics["last_chunk_order"]: metrics
         for metrics in meta.message_metrics
         if "last_chunk_order" in metrics
     }
+    interrupted_metrics = [metric for metric in meta.message_metrics if metric.get("interrupted")]
+    # Stream metrics use the unprotected ordering. Resolve those positions to
+    # coarse IDs before legacy list anchors collapse the displayed chunks.
+    interrupted_ids = {
+        chunk.id.split(".", 1)[0]
+        for chunk in (chunk_markdown(content, thread_id) if interrupted_metrics else [])
+        if any(
+            metric.get("first_chunk_order", -1) <= chunk.order
+            <= metric.get("last_chunk_order", -1)
+            for metric in interrupted_metrics
+        )
+    }
     return [
         {
             **chunk.__dict__,
+            "table_rows": [] if chunk.id.split(".", 1)[0] in interrupted_ids else chunk.table_rows,
             "metrics": metrics_by_order.get(chunk.order),
             "owner_thread_id": thread_id,
         }
         for chunk in chunk_markdown_with_protected_ids(
-            store.read_content(thread_id),
+            content,
             thread_id=thread_id,
             protected_chunk_ids=protected_chunk_ids,
         )
     ]
+
+
+def _thread_anchor_ids(thread_id: str) -> set[str]:
+    return {
+        anchor_id
+        for chunk in _chunks_with_metrics(thread_id)
+        for anchor_id in [chunk["id"], *(row["id"] for row in chunk["table_rows"])]
+    }
 
 
 def _display_lineage_chunks(thread_id: str) -> list[dict]:
@@ -663,6 +685,22 @@ def _display_lineage_chunks(thread_id: str) -> list[dict]:
     parent_prefix = []
     source_found = False
     for chunk in parent_chunks:
+        row = next(
+            (row for row in chunk["table_rows"] if row["id"] == source_chunk_id),
+            None,
+        )
+        if row:
+            parent_prefix.append({
+                **chunk,
+                "text": chunk["text"][:row["end_offset"]].rstrip(),
+                "table_rows": [
+                    item for item in chunk["table_rows"]
+                    if item["end_offset"] <= row["end_offset"]
+                ],
+                "metrics": None,
+            })
+            source_found = True
+            break
         parent_prefix.append(chunk)
         if chunk["id"] == source_chunk_id:
             source_found = True
@@ -875,13 +913,7 @@ def fork_thread(thread_id: str, req: ForkRequest):
         title = " ".join(prompt.split())[:54]
     with _locked_threads([thread_id]):
         parent_meta = store.load_meta(thread_id)
-        if req.chunk_id not in {
-            chunk.id for chunk in chunk_markdown_with_protected_ids(
-                store.read_content(thread_id),
-                thread_id,
-                _protected_chunk_ids(parent_meta),
-            )
-        }:
+        if req.chunk_id not in _thread_anchor_ids(thread_id):
             raise HTTPException(400, "Fork chunk does not exist in the parent thread")
         child = store.create_thread(
             title=title,
@@ -915,22 +947,20 @@ def edit_in_place(thread_id: str, req: EditRequest):
         raise HTTPException(404, "Thread not found")
     with _locked_threads([thread_id]):
         meta = store.load_meta(thread_id)
-        old_chunks = {
-            chunk.id: chunk.text
-            for chunk in chunk_markdown_with_protected_ids(
+        old_chunks = chunk_anchors(
+            chunk_markdown_with_protected_ids(
                 store.read_content(thread_id),
                 thread_id,
                 _protected_chunk_ids(meta),
             )
-        }
-        new_chunks = {
-            chunk.id: chunk.text
-            for chunk in chunk_markdown_with_protected_ids(
+        )
+        new_chunks = chunk_anchors(
+            chunk_markdown_with_protected_ids(
                 req.new_content,
                 thread_id,
                 _protected_chunk_ids(meta),
             )
-        }
+        )
         changed_anchors = [
             child["chunk_id"]
             for child in meta.forked_children
@@ -1042,13 +1072,7 @@ def refork(thread_id: str, req: ReforkRequest):
         raise HTTPException(404, "Thread not found")
     if not old_child.forked_from or old_child.forked_from["thread_id"] != thread_id:
         raise HTTPException(400, "The old branch is not a direct child of this thread")
-    if req.chunk_id not in {
-        chunk.id for chunk in chunk_markdown_with_protected_ids(
-            store.read_content(thread_id),
-            thread_id,
-            _protected_chunk_ids(parent),
-        )
-    }:
+    if req.chunk_id not in _thread_anchor_ids(thread_id):
         raise HTTPException(400, "Fork chunk does not exist in the parent thread")
     deleted_ids = store.descendant_ids(req.old_child_thread_id)
     ensure_git_repo(VAULT_ROOT)
@@ -1066,13 +1090,7 @@ def refork(thread_id: str, req: ReforkRequest):
         locked_deleted_ids = store.descendant_ids(req.old_child_thread_id)
         if locked_deleted_ids != deleted_ids:
             raise HTTPException(409, "The branch changed; retry re-fork")
-        if req.chunk_id not in {
-            chunk.id for chunk in chunk_markdown_with_protected_ids(
-                store.read_content(thread_id),
-                thread_id,
-                _protected_chunk_ids(parent),
-            )
-        }:
+        if req.chunk_id not in _thread_anchor_ids(thread_id):
             raise HTTPException(400, "Fork chunk does not exist in the parent thread")
         return _perform_refork(thread_id, req, parent, deleted_ids)
 

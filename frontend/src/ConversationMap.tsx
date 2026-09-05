@@ -8,6 +8,7 @@ import ReactFlow, {
   MarkerType,
   Panel,
   Position,
+  useNodesInitialized,
 } from "reactflow";
 import type { Edge, Node, NodeProps, ReactFlowInstance } from "reactflow";
 import { toPng } from "html-to-image";
@@ -44,6 +45,12 @@ const EDGE_TYPES = {};
 const handleGraphError = (code: string, message: string) => {
   if (code !== "002") console.warn(`[React Flow] ${message}`);
 };
+
+function MapReadiness({ onChange }: { onChange: (ready: boolean) => void }) {
+  const ready = useNodesInitialized();
+  useEffect(() => onChange(ready), [onChange, ready]);
+  return null;
+}
 
 function graphDistances(graph: GraphData, originId: string, maxDepth = 2): Map<string, number> {
   const neighbors = new Map<string, string[]>();
@@ -136,6 +143,7 @@ export function ConversationMap({
   finale?: boolean;
 }) {
   const [instance, setInstance] = useState<ReactFlowInstance | null>(null);
+  const [nodesInitialized, setNodesInitialized] = useState(false);
   const [mode, setMode] = useState<MapMode>(() => {
     if (compact) return "lineage";
     const stored = window.localStorage.getItem(MAP_MODE_KEY);
@@ -301,7 +309,7 @@ export function ConversationMap({
   }), [activeThreadId, compact, graph.edges, hiddenNodeIds, mode, selectedLineage]);
 
   useEffect(() => {
-    if (!instance || nodes.length === 0) return;
+    if (!instance || !nodesInitialized || nodes.length === 0) return;
     if (focusThreadId && !finale) {
       const focusedNode = nodes.find((node) => node.id === focusThreadId);
       if (focusedNode) {
@@ -320,7 +328,7 @@ export function ConversationMap({
       duration: finale ? 1000 : 0,
       padding: compact ? 0.18 : 0.24,
     });
-  }, [compact, finale, focusThreadId, instance, nodes]);
+  }, [compact, finale, focusThreadId, instance, nodes, nodesInitialized]);
 
   const persistLayout = useCallback(async (nextNodes: Node<ThreadNodeData>[]) => {
     if (compact) return;
@@ -476,6 +484,7 @@ export function ConversationMap({
       onPaneClick={compact ? undefined : () => setSelectedNodeId(null)}
       proOptions={{ hideAttribution: true }}
     >
+      <MapReadiness onChange={setNodesInitialized} />
       <Background
         id={compact ? "tutorial-grid" : "conversation-grid"}
         variant={BackgroundVariant.Lines}
