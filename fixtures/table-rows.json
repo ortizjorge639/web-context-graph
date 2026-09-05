@@ -1,0 +1,34 @@
+[
+  {
+    "name": "aligned cells, links, escaped pipes, inline code and empty cells",
+    "markdown": "| Command | Purpose |\n| :--- | ---: |\n| `/help` | [Help](https://example.com) |\n| `a\\|b` | escaped \\| pipe |\n| | Empty command |\n| `/diff` | |",
+    "rows": [
+      { "table_index": 0, "row_index": 0, "cells": ["/help", "Help"] },
+      { "table_index": 0, "row_index": 1, "cells": ["a|b", "escaped | pipe"] },
+      { "table_index": 0, "row_index": 2, "cells": ["", "Empty command"] },
+      { "table_index": 0, "row_index": 3, "cells": ["/diff", ""] }
+    ]
+  },
+  {
+    "name": "multiple tables within one coarse block",
+    "markdown": "| First | Value |\n| --- | --- |\n| one | two |\n***\n| Second | Value |\n| --- | --- |\n| three | four |",
+    "rows": [
+      { "table_index": 0, "row_index": 0, "cells": ["one", "two"] },
+      { "table_index": 1, "row_index": 0, "cells": ["three", "four"] }
+    ]
+  },
+  {
+    "name": "fenced table lookalike",
+    "markdown": "```md\n| Command | Purpose |\n| --- | --- |\n| fake | not a row |\n```",
+    "rows": []
+  },
+  {
+    "name": "optional outer pipes and padded missing cells",
+    "markdown": "Command | Purpose\n--- | :---:\n/help | Help\n/plan\n/diff | Diff | ignored excess",
+    "rows": [
+      { "table_index": 0, "row_index": 0, "cells": ["/help", "Help"] },
+      { "table_index": 0, "row_index": 1, "cells": ["/plan", ""] },
+      { "table_index": 0, "row_index": 2, "cells": ["/diff", "Diff"] }
+    ]
+  }
+]

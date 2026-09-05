@@ -5,7 +5,7 @@
 
 **Branch agent conversations into knowledge you own.**
 
-Lineage App is a trusted, single-user, local-first agent conversation workspace. FastAPI serves the React interface on localhost, each GitHub Copilot CLI response becomes addressable Markdown blocks, and a branch can begin from any whole block while preserving its root-to-fork lineage and excluding sibling branches.
+Lineage App is a trusted, single-user, local-first agent conversation workspace. FastAPI serves the React interface on localhost, each GitHub Copilot CLI response becomes addressable Markdown blocks, and a branch can begin from a whole block, list item, or table body row while preserving its root-to-fork lineage and excluding sibling branches.
 
 The interface is a view over a durable Knowledge Tree you own: `thread.md` stores conversation content, `meta.yaml` stores authoritative relationships, `index.md` is a regenerable discovery cache, and `AGENTS.md` explains the vault contract to other agent harnesses. Every mutation is committed to the vault's local Git history.
 
@@ -55,14 +55,16 @@ Set `PORT` to choose a different local port, or set `WCG_NO_OPEN=1` to start the
 
 ## How it works
 
-1. **Branch a block.** Each agent response is split into addressable Markdown blocks, with list items treated as separate branchable slices. Choose a whole block or item to begin the next request from that exact point.
+1. **Branch a block or row.** Each agent response is split into addressable Markdown blocks, with list items and table body rows treated as separate branchable slices. Click a table row or focus it with Tab, then use its branch button. The composer previews that row with its column headers; inherited context retains the header and all preceding rows, stopping at the selected row. The outer block toolbar still branches the whole table.
 2. **Preserve lineage.** The child thread receives root-to-fork context and continues independently; sibling branch content is excluded.
 3. **Navigate the tree.** Map/Knowledge Tree views let you trace branches, return to a node, branch again, and open conversations.
 4. **Own the artifact.** Plain Markdown and YAML remain useful outside the interface, while local Git records every mutation.
 
 New root conversations open directly to the composer. The initial placeholder title is replaced from the first user request so you can start writing without naming the thread first.
 
-Arbitrary highlighted-text or span branching is not implemented. Branching is block/list-item level today.
+Arbitrary highlighted-text or span branching is not implemented. Branching supports blocks, list items, and completed table body rows. Live or interrupted response tables do not expose row targets.
+
+Existing block (`#cN`) and list-item (`#cN.part`) addresses are unchanged. Table rows add a zero-based `.rowN` suffix within their containing chunk without renumbering later chunks or duplicating rendered tables. Existing whole-table branches remain valid. Edits that alter an anchored row's header or preceding context are rejected; edits strictly after that row are allowed unless another branch protects them. Replace an existing row branch with its row's **Replace** action, which asks for confirmation before deleting that branch and its descendants.
 
 ## Screenshots
 
@@ -203,7 +205,7 @@ No. Keep it on trusted localhost. Copilot currently runs with broad local tool a
 
 ### Is highlighted-text branching supported?
 
-No. Responses are addressable at the Markdown block level. Arbitrary highlighted spans are future work.
+No. Responses are addressable at the Markdown block, list-item, and table-body-row levels. Arbitrary highlighted spans are future work.
 
 ### Is it free and open source?
 

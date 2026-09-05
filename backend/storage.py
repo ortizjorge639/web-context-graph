@@ -51,6 +51,11 @@ exactly duplicate context already collected from ancestors.
 
 Chunk IDs are deterministic positional addresses in the form
 `<thread-id>#c<order>`, computed from that thread's Markdown blocks.
+List items can add a `.part` suffix. Table body rows add `.rowN` (zero-based
+within the containing chunk) without replacing its whole-block address.
+For a row anchor, retain the table header/alignment and all content through
+that row; exclude later rows and text. Prefer the API's rendered lineage over
+reimplementing Markdown parsing. Edits cannot change an anchored row's prefix.
 
 ## Mutation safety
 

@@ -21,6 +21,14 @@ export interface ForkedChild {
   title: string;
 }
 
+export interface TableRowAnchor {
+  id: string;
+  table_index: number;
+  row_index: number;
+  text: string;
+  end_offset: number;
+}
+
 export interface GraphData {
   nodes: Array<{
     id: string;
@@ -173,6 +181,7 @@ export async function getThread(id: string) {
       kind: string;
       order: number;
       text: string;
+      table_rows?: TableRowAnchor[];
       trace?: string[];
       metrics?: MessageMetrics;
       owner_thread_id?: string;
