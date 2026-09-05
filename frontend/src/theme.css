@@ -2851,6 +2851,8 @@ body {
 
 .markdown-table-scroll table {
   min-width: 28rem;
+  /* The wrapper, not the table, must be the sticky cells' scroll container. */
+  overflow: visible;
 }
 
 .markdown-table-scroll code {

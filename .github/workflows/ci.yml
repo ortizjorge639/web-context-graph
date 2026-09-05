@@ -41,6 +41,9 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npm run test:table-overflow
+
   windows:
     runs-on: windows-latest
     steps:
