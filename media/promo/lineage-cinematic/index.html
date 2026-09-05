@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Follow a thought. | Lineage App</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./node_modules/three/build/three.module.js",
+          "three/addons/": "./node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="./node_modules/gsap/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <!--
+      THESIS: Follow one thought through physical space, never a screenshot carousel.
+      OWN-WORLD: Warm-white paper, charcoal type, satin edges, one coral lineage.
+      STORY: A whole block forks; its path stays legible; every branch is already local.
+      FIRST VIEWPORT: Large readable response/page at right, quiet headline at left.
+      FORM: User-pinned continuous macro / track / wide / file-reveal / lockup film.
+    -->
+    <div data-hf-id="hf-fzgw" id="main" data-composition-id="main" data-start="0" data-duration="23" data-width="1920" data-height="1080">
+      <canvas data-hf-id="hf-nw9q" id="stage" aria-label="A physical response block branches into a knowledge tree"></canvas>
+      <div data-hf-id="hf-xw1g" id="opening-copy" class="copy copy-left">
+        <h1 data-hf-id="hf-fjud">Follow a<br data-hf-id="hf-x5px">thought.</h1>
+        <p data-hf-id="hf-ozx9">Start from a whole<br data-hf-id="hf-rsrt">response block.</p>
+      </div>
+      <div data-hf-id="hf-a6la" id="child-copy" class="copy copy-left">
+        <h2 data-hf-id="hf-apul">Give it room to branch.</h2>
+        <p data-hf-id="hf-1wyb">The path comes with you. Sibling conversations don't.</p>
+      </div>
+      <div data-hf-id="hf-ujpe" id="tree-copy" class="copy copy-wide">
+        <h2 data-hf-id="hf-c42e">Keep the path in view.</h2>
+      </div>
+      <div data-hf-id="hf-kee0" id="tree-caption" class="caption">
+        One root-to-current path. Every sibling stays separate.
+      </div>
+      <div data-hf-id="hf-iv3t" id="files-copy" class="copy copy-wide">
+        <h2 data-hf-id="hf-j31j">Your research. Your files.</h2>
+        <p data-hf-id="hf-ch9m">Already in your local vault.</p>
+      </div>
+      <div data-hf-id="hf-8na9" id="file-labels">
+        <span data-hf-id="hf-687a">Cooling one city block</span>
+        <span data-hf-id="hf-4nbc">Library canopy</span>
+        <span data-hf-id="hf-damn">Canopy materials</span>
+      </div>
+      <div data-hf-id="hf-6tu4" id="files-caption" class="caption">
+        <span data-hf-id="hf-iwl0">Markdown + YAML</span>
+        <span data-hf-id="hf-u0tu">index.md <b data-hf-id="hf-5hhf">navigation</b></span>
+        <span data-hf-id="hf-l9na">AGENTS.md <b data-hf-id="hf-fjxt">traversal</b></span>
+        <span data-hf-id="hf-tv98">Local Git history</span>
+      </div>
+      <div data-hf-id="hf-teh3" id="end-card">
+        <div data-hf-id="hf-y8ys" id="end-content">
+          <svg data-hf-id="hf-lbpg" class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+            <circle data-hf-id="hf-odce" cx="32" cy="49" r="6" />
+            <circle data-hf-id="hf-kohv" cx="13" cy="14" r="6" />
+            <circle data-hf-id="hf-b24d" cx="51" cy="14" r="6" />
+            <path data-hf-id="hf-50nx" fill="none" d="M32 43V34C32 24 13 30 13 20M32 34C32 24 51 30 51 20" />
+          </svg>
+          <h2 data-hf-id="hf-9sfj">Lineage App</h2>
+          <p data-hf-id="hf-kmz7" class="tagline">Branch agent conversations into knowledge you own.</p>
+          <p data-hf-id="hf-989m" class="boundary">Local-first · Open source · Copilot CLI beta</p>
+          <p data-hf-id="hf-fg47" class="url">ortizjorge639.github.io/web-context-graph/</p>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import { renderAt } from "./scene.js";
+      const clock = { time: 0 };
+      const timeline = gsap.timeline({ paused: true });
+      timeline.to(clock, {
+        time: 23, duration: 23, ease: "none",
+        onUpdate: () => renderAt(clock.time),
+      });
+      window.__timelines = window.__timelines || {};
+      window.__timelines.main = timeline;
+    </script>
+  </body>
+</html>

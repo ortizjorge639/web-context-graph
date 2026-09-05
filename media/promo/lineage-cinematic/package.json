@@ -1,0 +1,24 @@
+{
+  "name": "lineage-cinematic",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "hyperframes preview --port 3217",
+    "lint": "hyperframes lint --verbose",
+    "check": "hyperframes check --at-transitions",
+    "snapshot": "hyperframes snapshot --at 0,2.5,5.5,8,11.5,14,16.5,19,22.9 --no-end",
+    "render": "hyperframes render --fps 60 --quality high --crf 19 --strict --no-best-effort --experimental-fast-capture=false --output renders/lineage-cinematic.mp4",
+    "deliver": "node scripts/deliver.mjs",
+    "verify": "node scripts/verify.mjs",
+    "review": "node scripts/review.mjs renders/lineage-cinematic.mp4 review/final"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "gsap": "3.14.2",
+    "hyperframes": "0.8.10",
+    "puppeteer-core": "25.8.0",
+    "sharp": "0.35.0",
+    "three": "0.185.1"
+  }
+}
